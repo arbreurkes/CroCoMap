@@ -7,11 +7,11 @@
                 </span>
             </template>
 
-            <md-tab id="tab-state-machines" class="tab-one" md-label="Tab One" :md-template-data="{icon: 'timeline'}"
+            <md-tab id="tab-map" class="tab-one" md-label="Map" :md-template-data="{icon: 'map'}"
                     to="/tasks/tabOne">
                 <TasksTabOne></TasksTabOne>
             </md-tab>
-            <md-tab id="tab-statistics" md-label="Tab Two" :md-template-data="{icon: 'equalizer'}"
+            <md-tab id="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
                     to="/tasks/tabTwo">
                 <TasksTabTwo></TasksTabTwo>
             </md-tab>

@@ -4,6 +4,7 @@ import App from './App.vue';
 import VueRouter from 'vue-router';
 import VueMaterial from 'vue-material';
 import store from './store'
+import * as VueGoogleMaps from 'vue2-google-maps'
 
 import 'vue-material/dist/vue-material.min.css';
 import 'vue-material/dist/theme/default.css';
@@ -15,6 +16,10 @@ window.$ = $;
 Vue.use(VueRouter);
 Vue.use(VueMaterial);
 Vue.config.productionTip = false;
+Vue.use(VueGoogleMaps, {
+  load: {
+    key: process.env.VUE_APP_API_KEY,
+  }});
 
 window.hashCode = function(e) {
     var hash = 0;
