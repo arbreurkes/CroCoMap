@@ -1,29 +1,30 @@
 <template>
     <div class="content">
-        <md-empty-state
-                v-if="false"
-                md-icon="stars"
-                md-label="No Content Yet!"
-                md-description="This is an empty state, indicating that no content has been loaded for this page.
-                If you see this text, it means that this page has not yet been implemented.">
-            <md-button class="md-primary md-raised empty-state-button" to="/">Home</md-button>
-        </md-empty-state>
-        <div class="md-layout md-gutter">
-            <ExampleCard title="Example Card" :in-grid="true" size="md-size-33"></ExampleCard>
-        </div>
+        <gmap-street-view-panorama class="map" :position="{lat:52.0116596, lng:4.3591061}" :zoom="1">
+        </gmap-street-view-panorama>
     </div>
 </template>
 <script>
-    import ExampleCard from "../elements/ExampleCard";
+    import {gmapApi} from "vue2-google-maps";
 
     export default {
         name: 'TasksTabTwo',
-        components: {ExampleCard},
+        components: {},
         props: {},
         data: function () {
             return {}
         },
+        computed: {
+            google: gmapApi
+        },
+        mounted() {},
+        methods: {}
     };
 </script>
 <style scoped>
+    .map {
+        margin: -16px 0 0 -16px;
+        height: calc(100% + 32px);
+        width: calc(100% + 32px);
+    }
 </style>

@@ -8,15 +8,11 @@
                     disableDefaultUI: true,
                     draggable: false,
                     clickableIcons: false
-                    // mapTypeControl: false,
-                    // fullscreenControl: false,
-                    // streetViewControl: false,
                 }"
                 map-type-id="terrain"
                 class="map"
                 ref="mapRef"
         >
-            <!--            <gmap-polygon :paths="outerCoords"></gmap-polygon>-->
         </GmapMap>
     </div>
 </template>
@@ -82,10 +78,6 @@
     };
 </script>
 <style scoped>
-    :root {
-        padding: 0;
-    }
-
     .map {
         margin: -16px 0 0 -16px;
         height: calc(100% + 32px);
