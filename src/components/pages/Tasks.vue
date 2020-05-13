@@ -41,7 +41,7 @@
         components: {},
         data: function () {
             return {
-                location: {lat:52.0116596, lng:4.3591061},
+                location: {lat:52.01165376397885, lng:4.359065304767967},
                 previousPosition: this.location,
                 polygons: [],
                 outerCoords: [{lat: 90,lng:-90},{lat: 90,lng: 90},{lat: 90,lng:180},{lat: 90,lng:-90},
