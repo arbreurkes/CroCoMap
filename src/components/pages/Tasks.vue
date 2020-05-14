@@ -10,18 +10,18 @@
             <md-tab id="tab-map" class="tab-one" md-label="Map" :md-template-data="{icon: 'map'}"
                     to="/tasks/tabOne">
                 <GmapMap
-                        Map
-                        :center="location"
-                        :zoom="18"
-                        :options="{
+                         Map
+                         :center="position"
+                         :zoom="18"
+                         :options="{
                     disableDefaultUI: true,
                     draggable: false,
                     clickableIcons: false,
                     streetViewControl: true
                 }"
-                        map-type-id="terrain"
-                        class="map"
-                        ref="mapRef"
+                         map-type-id="terrain"
+                         class="map"
+                         ref="mapRef"
                 >
                 </GmapMap>
             </md-tab>
@@ -35,16 +35,17 @@
 </template>
 <script>
     import {gmapApi} from "vue2-google-maps";
+    import {mapGetters, mapMutations} from 'vuex'
 
     export default {
         name: 'Tasks',
         components: {},
         data: function () {
             return {
-                location: {lat:52.01165376397885, lng:4.359065304767967},
-                previousPosition: this.location,
+                position: {lat: 0, lng: 0},
+                previousPosition: this.position,
                 polygons: [],
-                outerCoords: [{lat: 90,lng:-90},{lat: 90,lng: 90},{lat: 90,lng:180},{lat: 90,lng:-90},
+                outerCoords: [{lat: 90, lng: -90}, {lat: 90, lng: 90}, {lat: 90, lng: 180}, {lat: 90, lng: -90},
                     {lat: -90, lng: -90}, {lat: -90, lng: 180}, {lat: -90, lng: 90}, {lat: -90, lng: -90}],
                 innerCoords: [{lng: 4.3583259998, lat: 52.0109693785},
                     {lng: 4.3581046768, lat: 52.0113134101},
@@ -66,17 +67,29 @@
             }
         },
         computed: {
-            google: gmapApi
+            google: gmapApi,
+            location: function () {
+                return this.getLocation()
+            }
+        },
+        watch: {
+            location: function () {
+                this.position = this.getCoordinates();
+                this.$nextTick(() => {
+                    this.initMap();
+                });
+            }
         },
         mounted: function () {
             this.$nextTick(() => {
                 if (this.$route.path === "/tasks/") {
                     this.$router.push("/tasks/tabOne")
                 }
-                this.initMap();
             });
         },
         methods: {
+            ...mapGetters(["getLocation", "getCoordinates", "getPosition"]),
+            ...mapMutations(["setPosition"]),
             initMap: function () {
                 this.$refs.mapRef.$mapPromise.then((map) => {
                     new this.google.maps.Polygon({
@@ -95,7 +108,7 @@
                         fillOpacity: 0.35
                     });
                     var pano = new this.google.maps.StreetViewPanorama(this.$refs.pano, {
-                        position: this.location
+                        position: this.position
                     });
                     map.setStreetView(pano);
 

@@ -23,18 +23,46 @@
         </md-drawer>
         <md-content class="main-content" id="main-content">
             <router-view></router-view>
+            <md-dialog :md-active="locationPrompt">
+                <md-dialog-title>Where are you currently located?</md-dialog-title>
+                <md-dialog-content>
+                    <md-field>
+                        <label for="location">Location</label>
+                        <md-select v-model="location" name="location" id="location" md-dense>
+                            <md-option v-for="l in locations" :key="l.value" :value="l">
+                                {{l}}
+                            </md-option>
+                        </md-select>
+                    </md-field>
+                    <md-dialog-actions>
+                        <md-button class="md-primary md-raised confirm-button" @click="confirmLocation" :disabled="!location">confirm</md-button>
+                    </md-dialog-actions>
+                </md-dialog-content>
+            </md-dialog>
         </md-content>
     </div>
 </template>
 
 <script>
+    import { mapMutations } from 'vuex'
+
     export default {
         name: 'app',
         components: {},
         data: () => ({
             showNavigation: false,
-            showSidepanel: false
-        })
+            showSidepanel: false,
+            locationPrompt: true,
+            location: null,
+            locations: ["Delft", "New York", "Beijing", "Melbourne"].sort()
+        }),
+        methods: {
+            ...mapMutations(['setLocation']),
+            confirmLocation: function() {
+                this.setLocation(this.location);
+                this.locationPrompt = false;
+            }
+        }
     }
 </script>
 <style>
@@ -109,7 +137,7 @@
         height: 100%;
     }
 
-    .empty-state-button {
+    .confirm-button, .empty-state-button {
         background-color: var(--mdc-theme-secondary) !important;
     }
 
@@ -126,5 +154,9 @@
 
     .md-layout {
         margin-bottom: 16px;
+    }
+
+    .md-dialog-container {
+        transform: none !important;
     }
 </style>
