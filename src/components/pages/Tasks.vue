@@ -10,18 +10,18 @@
             <md-tab id="tab-map" class="tab-one" md-label="Map" :md-template-data="{icon: 'map'}"
                     to="/tasks/tabOne">
                 <GmapMap
-                         Map
-                         :center="position"
-                         :zoom="18"
-                         :options="{
+                        Map
+                        :center="position"
+                        :zoom="16"
+                        :options="{
                     disableDefaultUI: true,
                     draggable: false,
                     clickableIcons: false,
                     streetViewControl: true
                 }"
-                         map-type-id="terrain"
-                         class="map"
-                         ref="mapRef"
+                        map-type-id="terrain"
+                        class="map"
+                        ref="mapRef"
                 >
                 </GmapMap>
             </md-tab>
@@ -43,27 +43,29 @@
         data: function () {
             return {
                 position: {lat: 0, lng: 0},
+                panoPosition: {},
                 previousPosition: this.position,
                 polygons: [],
                 outerCoords: [{lat: 90, lng: -90}, {lat: 90, lng: 90}, {lat: 90, lng: 180}, {lat: 90, lng: -90},
                     {lat: -90, lng: -90}, {lat: -90, lng: 180}, {lat: -90, lng: 90}, {lat: -90, lng: -90}],
-                innerCoords: [{lng: 4.3583259998, lat: 52.0109693785},
-                    {lng: 4.3581046768, lat: 52.0113134101},
-                    {lng: 4.357844388, lat: 52.0112506756},
-                    {lng: 4.3576394193, lat: 52.0115475968},
-                    {lng: 4.3599021447, lat: 52.0124058491},
-                    {lng: 4.3603868922, lat: 52.011960599},
-                    {lng: 4.360777354, lat: 52.0119813154},
-                    {lng: 4.3607659477, lat: 52.0118230383},
-                    {lng: 4.3605600584, lat: 52.0117503003},
-                    {lng: 4.3603482861, lat: 52.0118836737},
-                    {lng: 4.3594911572, lat: 52.0115163537},
-                    {lng: 4.3596133042, lat: 52.0114008894},
-                    {lng: 4.3595244125, lat: 52.0113659809},
-                    {lng: 4.3593954908, lat: 52.0114923702},
-                    {lng: 4.3583433611, lat: 52.0110958044},
-                    {lng: 4.3583865843, lat: 52.0109914234},
-                    {lng: 4.3583259998, lat: 52.0109693785}]
+                innerCoords: []
+                // innerCoords: [{lng: 4.3583259998, lat: 52.0109693785},
+                //     {lng: 4.3581046768, lat: 52.0113134101},
+                //     {lng: 4.357844388, lat: 52.0112506756},
+                //     {lng: 4.3576394193, lat: 52.0115475968},
+                //     {lng: 4.3599021447, lat: 52.0124058491},
+                //     {lng: 4.3603868922, lat: 52.011960599},
+                //     {lng: 4.360777354, lat: 52.0119813154},
+                //     {lng: 4.3607659477, lat: 52.0118230383},
+                //     {lng: 4.3605600584, lat: 52.0117503003},
+                //     {lng: 4.3603482861, lat: 52.0118836737},
+                //     {lng: 4.3594911572, lat: 52.0115163537},
+                //     {lng: 4.3596133042, lat: 52.0114008894},
+                //     {lng: 4.3595244125, lat: 52.0113659809},
+                //     {lng: 4.3593954908, lat: 52.0114923702},
+                //     {lng: 4.3583433611, lat: 52.0110958044},
+                //     {lng: 4.3583865843, lat: 52.0109914234},
+                //     {lng: 4.3583259998, lat: 52.0109693785}]
             }
         },
         computed: {
@@ -92,41 +94,79 @@
             ...mapMutations(["setPosition"]),
             initMap: function () {
                 this.$refs.mapRef.$mapPromise.then((map) => {
-                    new this.google.maps.Polygon({
-                        paths: this.innerCoords,
-                        strokeColor: '#0000FF',
-                        strokeOpacity: 0.3,
-                        strokeWeight: 1,
-                        map: map,
-                        fillOpacity: 0.0
+                    var bounds = map.getBounds();
+                    var latBounds = bounds.Ya;
+                    var lngBounds = bounds.Ua;
+                    var latDiff = Math.abs(latBounds.i - latBounds.j);
+                    var lngDiff = Math.abs(lngBounds.i - lngBounds.j);
+
+                    var quadrants = [{lat: latBounds.i, lng: lngBounds.i},
+                        {lat: latBounds.i + latDiff / 2, lng: lngBounds.i},
+                        {lat: latBounds.i, lng: lngBounds.i + lngDiff / 2},
+                        {lat: latBounds.i + latDiff / 2, lng: lngBounds.i + lngDiff / 2}];
+                    for (var i = 0; i < 2; i++) {
+                        for (var j = i; j < i + 2; j++) {
+                            if (i + j < 1 || Math.random() + Math.random() >= 1) {
+                                var boxLatDiff = latDiff / 10;
+                                var boxLngDiff = lngDiff / 10;
+
+                                var latRatio = Math.random();
+                                var lngRatio = Math.random();
+                                var startLat = Math.min(quadrants[i + j].lat + ((latDiff / 2) * latRatio),
+                                    quadrants[i + j].lat + (latDiff / 2) - boxLatDiff);
+                                var startLng = Math.min(quadrants[i + j].lng + ((lngDiff / 2) * lngRatio),
+                                    quadrants[i + j].lng + (lngDiff / 2) - boxLngDiff);
+
+                                this.innerCoords[i + j] = [{lat: startLat, lng: startLng},
+                                    {lat: startLat + boxLatDiff, lng: startLng},
+                                    {lat: startLat + boxLatDiff, lng: startLng + boxLngDiff},
+                                    {lat: startLat, lng: startLng + boxLngDiff},
+                                    {lat: startLat, lng: startLng}];
+
+                                this.polygons[i + j] = new this.google.maps.Polygon({
+                                    paths: this.innerCoords[i + j],
+                                    strokeColor: '#0000FF',
+                                    strokeOpacity: 0.3,
+                                    strokeWeight: 1,
+                                    map: map,
+                                    fillOpacity: 0.0
+                                });
+
+                                if (i + j === 0) {
+                                    this.panoPosition = {lat: startLat + (boxLatDiff / 2),
+                                        lng: startLng + (boxLngDiff / 2)}
+                                }
+                            }
+                        }
+                    }
+
+                    var paths = [this.outerCoords];
+                    this.innerCoords.forEach((o) => {
+                        paths.push(o.reverse())
                     });
+
                     new this.google.maps.Polygon({
-                        paths: [this.outerCoords, this.innerCoords.reverse()],
+                        paths: paths,
                         strokeWeight: 0,
                         map: map,
                         fillColor: '#FF0000',
                         fillOpacity: 0.35
                     });
+
                     var pano = new this.google.maps.StreetViewPanorama(this.$refs.pano, {
-                        position: this.position
+                        position: this.panoPosition
                     });
                     map.setStreetView(pano);
 
-                    this.polygons[0] = new this.google.maps.Polygon({
-                        paths: this.innerCoords,
-                        fillColor: '#FF0000',
-                        fillOpacity: 0
-                    });
-
-                    pano.addListener('position_changed', () => {
-                        var pos = pano.getPosition();
-
-                        if (pos !== this.previousPosition && !this.google.maps.geometry.poly.containsLocation(pos, this.polygons[0])) {
-                            pano.setPosition(this.previousPosition);
-                        } else {
-                            this.previousPosition = pos;
-                        }
-                    });
+                    // pano.addListener('position_changed', () => {
+                    //     var pos = pano.getPosition();
+                    //
+                    //     if (pos !== this.previousPosition && !this.google.maps.geometry.poly.containsLocation(pos, this.polygons[0])) {
+                    //         pano.setPosition(this.previousPosition);
+                    //     } else {
+                    //         this.previousPosition = pos;
+                    //     }
+                    // });
                 });
             }
         }
@@ -159,7 +199,7 @@
     }
 
     .tab-one {
-        overflow-y: scroll;
+        overflow-y: hidden;
     }
 
     .md-content.md-tabs-content {
