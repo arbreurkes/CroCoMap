@@ -31,6 +31,9 @@
             </md-tab>
         </md-tabs>
         <hr class="tab-divider"/>
+        <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showSnackbar" md-persistent>
+            <span style="width: 100%; text-align: center;">Please stay within the allocated area!</span>
+        </md-snackbar>
     </div>
 </template>
 <script>
@@ -48,7 +51,8 @@
                 polygons: [],
                 outerCoords: [{lat: 90, lng: -90}, {lat: 90, lng: 90}, {lat: 90, lng: 180}, {lat: 90, lng: -90},
                     {lat: -90, lng: -90}, {lat: -90, lng: 180}, {lat: -90, lng: 90}, {lat: -90, lng: -90}],
-                innerCoords: []
+                innerCoords: [],
+                showSnackbar: false
                 // innerCoords: [{lng: 4.3583259998, lat: 52.0109693785},
                 //     {lng: 4.3581046768, lat: 52.0113134101},
                 //     {lng: 4.357844388, lat: 52.0112506756},
@@ -123,8 +127,8 @@
                                     {lat: startLat, lng: startLng + boxLngDiff},
                                     {lat: startLat, lng: startLng}];
 
-                                this.polygons[i + j] = new this.google.maps.Polygon({
-                                    paths: this.innerCoords[i + j],
+                                this.polygons[this.polygons.length] = new this.google.maps.Polygon({
+                                    paths: this.innerCoords[this.innerCoords.length - 1],
                                     strokeColor: '#0000FF',
                                     strokeOpacity: 0.3,
                                     strokeWeight: 1,
@@ -154,7 +158,8 @@
                     });
 
                     var pano = new this.google.maps.StreetViewPanorama(this.$refs.pano, {
-                        position: this.panoPosition
+                        position: this.panoPosition,
+                        source: this.google.maps.StreetViewSource.OUTDOOR
                     });
                     map.setStreetView(pano);
 
@@ -171,6 +176,7 @@
                             }
 
                             if (!isInBounds) {
+                                this.showSnackbar = true;
                                 pano.setPosition(this.previousPosition);
                             } else {
                                 this.previousPosition = pos;
