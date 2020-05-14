@@ -117,7 +117,7 @@
                                 var startLng = Math.min(quadrants[i + j].lng + ((lngDiff / 2) * lngRatio),
                                     quadrants[i + j].lng + (lngDiff / 2) - boxLngDiff);
 
-                                this.innerCoords[i + j] = [{lat: startLat, lng: startLng},
+                                this.innerCoords[this.innerCoords.length] = [{lat: startLat, lng: startLng},
                                     {lat: startLat + boxLatDiff, lng: startLng},
                                     {lat: startLat + boxLatDiff, lng: startLng + boxLngDiff},
                                     {lat: startLat, lng: startLng + boxLngDiff},
@@ -158,15 +158,25 @@
                     });
                     map.setStreetView(pano);
 
-                    // pano.addListener('position_changed', () => {
-                    //     var pos = pano.getPosition();
-                    //
-                    //     if (pos !== this.previousPosition && !this.google.maps.geometry.poly.containsLocation(pos, this.polygons[0])) {
-                    //         pano.setPosition(this.previousPosition);
-                    //     } else {
-                    //         this.previousPosition = pos;
-                    //     }
-                    // });
+                    pano.addListener('position_changed', () => {
+                        var pos = pano.getPosition();
+
+                        if (pos !== this.previousPosition) {
+                            var isInBounds = false;
+                            for (var i = 0; i < this.polygons.length; i++) {
+                                if (this.google.maps.geometry.poly.containsLocation(pos, this.polygons[i])) {
+                                    isInBounds = true;
+                                    break;
+                                }
+                            }
+
+                            if (!isInBounds) {
+                                pano.setPosition(this.previousPosition);
+                            } else {
+                                this.previousPosition = pos;
+                            }
+                        }
+                    });
                 });
             }
         }
