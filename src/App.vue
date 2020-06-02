@@ -29,22 +29,22 @@
         </md-drawer>
         <md-content class="main-content" id="main-content">
             <router-view></router-view>
-            <md-dialog :md-active="locationPrompt">
-                <md-dialog-title>Where are you currently located?</md-dialog-title>
-                <md-dialog-content>
-                    <md-field>
-                        <label for="location">Location</label>
-                        <md-select v-model="location" name="location" id="location" md-dense>
-                            <md-option v-for="l in locations" :key="l.value" :value="l">
-                                {{l}}
-                            </md-option>
-                        </md-select>
-                    </md-field>
-                    <md-dialog-actions>
-                        <md-button class="md-primary md-raised confirm-button" @click="confirmLocation" :disabled="!location">confirm</md-button>
-                    </md-dialog-actions>
-                </md-dialog-content>
-            </md-dialog>
+<!--            <md-dialog :md-active="locationPrompt">-->
+<!--                <md-dialog-title>Where are you currently located?</md-dialog-title>-->
+<!--                <md-dialog-content>-->
+<!--                    <md-field>-->
+<!--                        <label for="location">Location</label>-->
+<!--                        <md-select v-model="location" name="location" id="location" md-dense>-->
+<!--                            <md-option v-for="l in locations" :key="l.value" :value="l">-->
+<!--                                {{l}}-->
+<!--                            </md-option>-->
+<!--                        </md-select>-->
+<!--                    </md-field>-->
+<!--                    <md-dialog-actions>-->
+<!--                        <md-button class="md-primary md-raised confirm-button" @click="confirmLocation" :disabled="!location">confirm</md-button>-->
+<!--                    </md-dialog-actions>-->
+<!--                </md-dialog-content>-->
+<!--            </md-dialog>-->
         </md-content>
     </div>
 </template>
@@ -76,6 +76,11 @@
     }
 </script>
 <style>
+    body {
+        height: 100%;
+        overflow: hidden;
+    }
+
     :root {
         --MSU-green: #243E36;
         --metallic-gold: #C2A83E;
