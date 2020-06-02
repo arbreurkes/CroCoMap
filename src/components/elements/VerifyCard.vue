@@ -51,7 +51,7 @@
     </div>
 </template>
 <script>
-    import {mapActions} from 'vuex';
+    import {mapActions, mapGetters} from 'vuex';
 
     export default {
         name: 'VerifyCard',
@@ -72,6 +72,7 @@
         computed: {},
         methods: {
             ...mapActions(['updateVerifyVotes']),
+            ...mapGetters(['getVerifyVotes']),
             verify: function() {
                 this.updateVerifyVotes(this.title);
                 this.verifyPrompt = false;
@@ -130,6 +131,6 @@
     }
 
     .dialog-content {
-        padding-bottom: 8px;
+        padding-bottom: 0;
     }
 </style>

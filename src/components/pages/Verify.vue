@@ -2,19 +2,18 @@
     <div class="verify-page">
         <div v-if="!done">
             <div class="md-layout md-gutter">
+                <streetview-card :position="this.snapShots[voteIndex]['location']" :pov="this.snapShots[voteIndex]['pov']" :inGrid="true" size="md-size-33"></streetview-card>
                 <verify-card title="First" :image="this.snapShots[voteIndex]['First']" :index="voteIndex" :inGrid="true"
                              size="md-size-33"></verify-card>
                 <verify-card title="Second" :image="this.snapShots[voteIndex]['Second']" :index="voteIndex" :inGrid="true"
                              size="md-size-33"></verify-card>
-                <verify-card title="Third" :image="this.snapShots[voteIndex]['Third']" :index="voteIndex" :inGrid="true"
-                             size="md-size-33"></verify-card>
             </div>
             <div class="md-layout md-gutter">
+                <verify-card title="Third" :image="this.snapShots[voteIndex]['Third']" :index="voteIndex" :inGrid="true"
+                             size="md-size-33"></verify-card>
                 <verify-card title="Fourth" :image="this.snapShots[voteIndex]['Fourth']" :index="voteIndex" :inGrid="true"
                              size="md-size-33"></verify-card>
                 <verify-card title="Fifth" :image="this.snapShots[voteIndex]['Fifth']" :index="voteIndex" :inGrid="true"
-                             size="md-size-33"></verify-card>
-                <verify-card title="Sixth" :image="this.snapShots[voteIndex]['Sixth']" :index="voteIndex" :inGrid="true"
                              size="md-size-33"></verify-card>
             </div>
         </div>
@@ -33,10 +32,12 @@
 <script>
     import VerifyCard from "../elements/VerifyCard";
     import {mapGetters} from 'vuex'
+    import StreetviewCard from "../elements/StreetviewCard";
 
     export default {
         name: 'Fix',
         components: {
+            StreetviewCard,
             VerifyCard
         },
         data: function () {
