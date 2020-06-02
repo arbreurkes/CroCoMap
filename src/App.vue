@@ -50,7 +50,7 @@
 </template>
 
 <script>
-    import { mapMutations } from 'vuex'
+    import { mapGetters, mapMutations } from 'vuex'
 
     export default {
         name: 'app',
@@ -62,7 +62,11 @@
             location: null,
             locations: ["Delft", "New York", "Beijing", "Melbourne"].sort()
         }),
+        mounted() {
+            this.location = this.getLocation();
+        },
         methods: {
+            ...mapGetters(['getLocation']),
             ...mapMutations(['setLocation']),
             confirmLocation: function() {
                 this.setLocation(this.location);

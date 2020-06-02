@@ -9,7 +9,6 @@ import * as VueGoogleMaps from 'vue2-google-maps'
 import 'vue-material/dist/vue-material.min.css';
 import 'vue-material/dist/theme/default.css';
 
-import HelloWorld from "./components/pages/HelloWorld";
 import Find from "./components/pages/Find";
 import Fix from "./components/pages/Fix";
 import Verify from "./components/pages/Verify";
@@ -42,9 +41,7 @@ export default {
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: HelloWorld,
-    props: {msg: "Welcome to the CC Dashboard"}
+    redirect: '/find/tabOne'
   },
   {
     path: '/find/*',

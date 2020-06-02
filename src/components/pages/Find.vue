@@ -79,17 +79,22 @@
             }
         },
         watch: {
-            location: function () {
-                this.position = this.getCoordinates();
-                this.$nextTick(() => {
-                    this.initMap();
-                });
+            location: {
+                immediate: true,
+                handler: function() {
+                    if (this.location !== null) {
+                        this.position = this.getCoordinates();
+                        this.$nextTick(() => {
+                            this.initMap();
+                        });
+                    }
+                }
             }
         },
         mounted: function () {
             this.$nextTick(() => {
-                if (this.$route.path === "/tasks/") {
-                    this.$router.push("/tasks/tabOne")
+                if (this.$route.path === "/find/") {
+                    this.$router.push("/find/tabOne")
                 }
             });
         },
