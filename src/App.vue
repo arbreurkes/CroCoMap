@@ -4,20 +4,26 @@
             <md-button class="md-icon-button" @click="showNavigation = !showNavigation">
                 <md-icon>menu</md-icon>
             </md-button>
-            <span class="md-title">CC Dashboard</span>
+            <span class="md-title">CroCoMap</span>
         </md-toolbar>
 
         <md-drawer class="md-drawer md-drawer--modal" :md-active.sync="showNavigation" md-swipeable>
             <md-toolbar class="md-transparent" md-elevation="0">
-                <span class="md-title">CC Dashboard</span>
+                <span class="md-title">CroCoMap</span>
             </md-toolbar>
 
             <md-list>
                 <md-list-item @click="showNavigation = false" to="/" exact>
                     Home
                 </md-list-item>
-                <md-list-item @click="showNavigation = false" to="/tasks/">
-                        Tasks
+                <md-list-item @click="showNavigation = false" to="/find/">
+                    Find
+                </md-list-item>
+                <md-list-item @click="showNavigation = false" to="/fix/">
+                    Fix
+                </md-list-item>
+                <md-list-item @click="showNavigation = false" to="/verify/">
+                    Verify
                 </md-list-item>
             </md-list>
         </md-drawer>
@@ -44,7 +50,7 @@
 </template>
 
 <script>
-    import { mapMutations } from 'vuex'
+    import { mapGetters, mapMutations } from 'vuex'
 
     export default {
         name: 'app',
@@ -56,7 +62,11 @@
             location: null,
             locations: ["Delft", "New York", "Beijing", "Melbourne"].sort()
         }),
+        mounted() {
+            this.location = this.getLocation();
+        },
         methods: {
+            ...mapGetters(['getLocation']),
             ...mapMutations(['setLocation']),
             confirmLocation: function() {
                 this.setLocation(this.location);

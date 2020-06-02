@@ -8,7 +8,7 @@
             </template>
 
             <md-tab id="tab-map" class="tab-one" md-label="Map" :md-template-data="{icon: 'map'}"
-                    to="/tasks/tabOne">
+                    to="/find/tabOne">
                 <GmapMap
                         Map
                         :center="position"
@@ -26,7 +26,7 @@
                 </GmapMap>
             </md-tab>
             <md-tab id="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
-                    to="/tasks/tabTwo">
+                    to="/find/tabTwo">
                 <div ref="pano" class="map"></div>
             </md-tab>
         </md-tabs>
@@ -41,7 +41,7 @@
     import {mapGetters, mapMutations} from 'vuex'
 
     export default {
-        name: 'Tasks',
+        name: 'Find',
         components: {},
         data: function () {
             return {
@@ -79,17 +79,22 @@
             }
         },
         watch: {
-            location: function () {
-                this.position = this.getCoordinates();
-                this.$nextTick(() => {
-                    this.initMap();
-                });
+            location: {
+                immediate: true,
+                handler: function() {
+                    if (this.location !== null) {
+                        this.position = this.getCoordinates();
+                        this.$nextTick(() => {
+                            this.initMap();
+                        });
+                    }
+                }
             }
         },
         mounted: function () {
             this.$nextTick(() => {
-                if (this.$route.path === "/tasks/") {
-                    this.$router.push("/tasks/tabOne")
+                if (this.$route.path === "/find/") {
+                    this.$router.push("/find/tabOne")
                 }
             });
         },
