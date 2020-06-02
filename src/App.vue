@@ -4,12 +4,12 @@
             <md-button class="md-icon-button" @click="showNavigation = !showNavigation">
                 <md-icon>menu</md-icon>
             </md-button>
-            <span class="md-title">CC Dashboard</span>
+            <span class="md-title">CroCoMap</span>
         </md-toolbar>
 
         <md-drawer class="md-drawer md-drawer--modal" :md-active.sync="showNavigation" md-swipeable>
             <md-toolbar class="md-transparent" md-elevation="0">
-                <span class="md-title">CC Dashboard</span>
+                <span class="md-title">CroCoMap</span>
             </md-toolbar>
 
             <md-list>
