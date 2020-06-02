@@ -1,15 +1,30 @@
 <template>
     <div class="verify-page">
-        <div class="md-layout md-gutter">
-            <verify-card title="First" :image="this.snapShots['First']" :inGrid="true" size="md-size-33"></verify-card>
-            <verify-card title="Second" :image="this.snapShots['Second']" :inGrid="true" size="md-size-33"></verify-card>
-            <verify-card title="Third" :image="this.snapShots['Third']" :inGrid="true" size="md-size-33"></verify-card>
+        <div v-if="!done">
+            <div class="md-layout md-gutter">
+                <verify-card title="First" :image="this.snapShots[voteIndex]['First']" :index="voteIndex" :inGrid="true"
+                             size="md-size-33"></verify-card>
+                <verify-card title="Second" :image="this.snapShots[voteIndex]['Second']" :index="voteIndex" :inGrid="true"
+                             size="md-size-33"></verify-card>
+                <verify-card title="Third" :image="this.snapShots[voteIndex]['Third']" :index="voteIndex" :inGrid="true"
+                             size="md-size-33"></verify-card>
+            </div>
+            <div class="md-layout md-gutter">
+                <verify-card title="Fourth" :image="this.snapShots[voteIndex]['Fourth']" :index="voteIndex" :inGrid="true"
+                             size="md-size-33"></verify-card>
+                <verify-card title="Fifth" :image="this.snapShots[voteIndex]['Fifth']" :index="voteIndex" :inGrid="true"
+                             size="md-size-33"></verify-card>
+                <verify-card title="Sixth" :image="this.snapShots[voteIndex]['Sixth']" :index="voteIndex" :inGrid="true"
+                             size="md-size-33"></verify-card>
+            </div>
         </div>
-        <div class="md-layout md-gutter">
-            <verify-card title="Fourth" :image="this.snapShots['Fourth']" :inGrid="true" size="md-size-33"></verify-card>
-            <verify-card title="Fifth" :image="this.snapShots['Fifth']" :inGrid="true" size="md-size-33"></verify-card>
-            <verify-card title="Sixth" :image="this.snapShots['Sixth']" :inGrid="true" size="md-size-33"></verify-card>
-        </div>
+        <md-empty-state
+                v-if="done"
+                class="verify-empty"
+                md-icon="verified"
+                md-label="All set!"
+                md-description="You have completed your verify tasks for now. Thank you!">
+        </md-empty-state>
         <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showSnackbar" md-persistent>
             <span style="width: 100%; text-align: center;">Please stay within the allocated area!</span>
         </md-snackbar>
@@ -26,20 +41,32 @@
         },
         data: function () {
             return {
-                showSnackbar: false
+                showSnackbar: false,
+                voteIndex: 0,
+                done: false
             }
         },
         computed: {
             snapShots: function () {
                 return this.getSnapshots();
+            },
+            votes: function () {
+                return this.getVerifyVotes();
             }
         },
         watch: {
+            votes: function () {
+                if (this.snapShots.length > this.voteIndex + 1) {
+                    this.voteIndex++;
+                } else {
+                    this.done = true;
+                }
+            }
         },
         mounted: function () {
         },
         methods: {
-            ...mapGetters(['getSnapshots'])
+            ...mapGetters(['getSnapshots', 'getVerifyVotes'])
         }
     };
 </script>
@@ -49,6 +76,10 @@
         padding: 16px;
         height: calc(100vh - 48px);
         overflow-y: scroll;
+    }
+
+    .md-icon {
+        font-family: 'Material Icons Outlined';
     }
 
     .md-layout {

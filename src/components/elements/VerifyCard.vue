@@ -29,7 +29,7 @@
                         md-icon="check_circle_outline"
                         md-description="Are you sure you wish to vote for this annotation? You may only pick one.">
                     <span class="button-span">
-                        <md-button class="vote-button md-raised" @click="verifyPrompt = false">Confirm</md-button>
+                        <md-button class="vote-button md-raised" @click="verify()">Confirm</md-button>
                         <md-button class="omit-button md-raised" @click="verifyPrompt = false">CANCEL</md-button>
                     </span>
                 </md-empty-state>
@@ -42,7 +42,7 @@
                         md-icon="remove_circle_outline"
                         md-description="If you mark this object as not risky, you will not be able to vote on the other snapshots.">
                     <span class="button-span">
-                        <md-button class="vote-button md-raised" @click="omitPrompt = false">Confirm</md-button>
+                        <md-button class="vote-button md-raised" @click="omit()">Confirm</md-button>
                         <md-button class="omit-button md-raised" @click="omitPrompt = false">CANCEL</md-button>
                     </span>
                 </md-empty-state>
@@ -51,7 +51,7 @@
     </div>
 </template>
 <script>
-    import {mapMutations} from 'vuex';
+    import {mapActions} from 'vuex';
 
     export default {
         name: 'VerifyCard',
@@ -59,17 +59,27 @@
             title: String,
             size: String,
             inGrid: Boolean,
-            image: String
+            image: String,
+            index: Number
         },
         data: function() {
           return {
               verifyPrompt: false,
-              omitPrompt: false
+              omitPrompt: false,
+              selectedAnnotation: null
           }
         },
         computed: {},
         methods: {
-            ...mapMutations(['setShowVerifyDialog', 'setShowOmitDialog'])
+            ...mapActions(['updateVerifyVotes']),
+            verify: function() {
+                this.updateVerifyVotes(this.title);
+                this.verifyPrompt = false;
+            },
+            omit: function () {
+                this.updateVerifyVotes(null);
+                this.omitPrompt = false;
+            }
         }
     };
 </script>
