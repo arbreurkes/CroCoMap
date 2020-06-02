@@ -10,7 +10,9 @@ import 'vue-material/dist/vue-material.min.css';
 import 'vue-material/dist/theme/default.css';
 
 import HelloWorld from "./components/pages/HelloWorld";
-import Tasks from "./components/pages/Tasks";
+import Find from "./components/pages/Find";
+import Fix from "./components/pages/Fix";
+import Verify from "./components/pages/Verify";
 
 window.$ = $;
 Vue.use(VueRouter);
@@ -45,9 +47,21 @@ const routes = [
     props: {msg: "Welcome to the CC Dashboard"}
   },
   {
-    path: '/tasks/*',
-    name: 'Tasks',
-    component: Tasks,
+    path: '/find/*',
+    name: 'find',
+    component: Find,
+    props: {}
+  },
+  {
+    path: '/fix/*',
+    name: 'Fix',
+    component: Fix,
+    props: {}
+  },
+  {
+    path: '/verify/*',
+    name: 'Verify',
+    component: Verify,
     props: {}
   }
 ];

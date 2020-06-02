@@ -16,8 +16,14 @@
                 <md-list-item @click="showNavigation = false" to="/" exact>
                     Home
                 </md-list-item>
-                <md-list-item @click="showNavigation = false" to="/tasks/">
-                        Tasks
+                <md-list-item @click="showNavigation = false" to="/find/">
+                    Find
+                </md-list-item>
+                <md-list-item @click="showNavigation = false" to="/fix/">
+                    Fix
+                </md-list-item>
+                <md-list-item @click="showNavigation = false" to="/verify/">
+                    Verify
                 </md-list-item>
             </md-list>
         </md-drawer>
