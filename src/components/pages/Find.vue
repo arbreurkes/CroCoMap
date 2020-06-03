@@ -25,10 +25,10 @@
                 >
                 </GmapMap>
             </md-tab>
-            <md-button class="md-raised md-primary" v-on:click="addPin">Add pin</md-button>
             <md-tab id="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
                     to="/find/tabTwo">
-                <div ref="pano" class="map"></div>
+                <md-button class="md-raised md-primary annotate-btn" v-on:click="addPin">Add pin</md-button>
+                <div ref="pano" class="map" v-on:click="annotateFunc"></div>
             </md-tab>
         </md-tabs>
         <hr class="tab-divider"/>
@@ -40,6 +40,7 @@
 <script>
     import {gmapApi} from "vue2-google-maps";
     import {mapGetters, mapMutations} from 'vuex'
+    import Raycast from '../../utils/raycast'
 
     export default {
         name: 'Find',
@@ -53,7 +54,8 @@
                 outerCoords: [{lat: 90, lng: -90}, {lat: 90, lng: 90}, {lat: 90, lng: 180}, {lat: 90, lng: -90},
                     {lat: -90, lng: -90}, {lat: -90, lng: 180}, {lat: -90, lng: 90}, {lat: -90, lng: -90}],
                 innerCoords: [],
-                showSnackbar: false
+                showSnackbar: false,
+                annotateActive: false,
                 // innerCoords: [{lng: 4.3583259998, lat: 52.0109693785},
                 //     {lng: 4.3581046768, lat: 52.0113134101},
                 //     {lng: 4.357844388, lat: 52.0112506756},
@@ -197,35 +199,40 @@
                     
                 });
             },
+            annotateFunc: function(ev) {
+                if (this.annotateActive) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    this.annotateActive = false;
+
+                    var panoRef = this.$refs.pano;
+                    var width = panoRef.clientWidth;
+                    var height = panoRef.clientHeight;
+
+                    var normX = (ev.clientX - panoRef.offsetLeft) / width;
+                    var normY = 1 - (ev.clientY - panoRef.offsetTop) / height;
+
+                    var position = this.pano.getPosition();
+                    var zoom = this.pano.getZoom();
+                    var {heading, pitch} = this.pano.getPov();
+                    var fov = (180/Math.pow(2,zoom));
+
+                    var r = Raycast.createNew(heading, pitch, normX, normY, fov, width, height);
+                    var l = r.get_latlng(position.lat(),position.lng());
+
+                    new this.google.maps.Marker({
+                        position: l,
+                        map: this.pano,
+                        title: 'Annotation'
+                    });
+                    console.log('annotation set');
+                }
+            },
             addPin: function () {
-                var position = this.pano.getPosition();
-                // var zoom = this.pano.getZoom();
-                // var {heading, pitch} = this.pano.getPov();
-
-                var marker = new this.google.maps.Marker({
-                    position: position,
-                    map: this.pano,
-                    title: 'Annotation'
-                });
-                console.log(marker);
-
-                // TODO: Adapt Sihang's code
-                // var width = null;
-                // var height = null;
-                // var ly = null;
-                // var ry = null;
-
-                // var y = 1.0 - Math.max(ly,ry)*2.0;
-                // var x = (lx + rx) - 1.0;
-                // var fov = (180/Math.pow(2,zoom));
-                // var r = Raycast.createNew(heading, pitch, x, y, fov, cvs.width/cvs.height);
-                // var l = r.get_latlng(location.lat(),location.lng());
-                // if (l!=null) {
-                //     warn("The object is labeled.",false);
-                //     addLabel(l);
-                //     add_row(location,l,heading,pitch,zoom,lx,ly,rx,ry);
-                // }
-                // else warn("Unable to label the object. Please move closer to the object.",true);
+                this.annotateActive = true;
+                this.pano.options['clickToGo'] = false;
+                this.pano.options['linksControl'] = false;
+                this.pano.options['zoomControl'] = false;
             }
         }
     };
@@ -285,5 +292,11 @@
         margin: -16px 0 0 -16px;
         height: calc(100% + 32px);
         width: calc(100% + 32px);
+    }
+
+    .annotate-btn {
+        position: absolute;
+        top: 50%;
+        z-index: 999;
     }
 </style>

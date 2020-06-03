@@ -42,3 +42,5 @@ var Raycast = {
     }
 
 }
+
+export default Raycast;
