@@ -8,7 +8,10 @@
             <md-avatar class="md-avatar-icon">
                 <md-icon>person</md-icon>
             </md-avatar>
-            <span class="user-info">Crowdworker#1<br><md-icon>military_tech</md-icon>42</span>
+            <div class="user-info">
+            <span >Crowdworker#1<br><md-icon>military_tech</md-icon></span>
+            <span class="user-score">42</span>
+            </div>
         </md-toolbar>
 
         <md-drawer class="md-drawer md-drawer--modal" :md-active.sync="showNavigation" md-swipeable>
@@ -118,6 +121,10 @@
         padding-left: 8px;
         text-align: center;
         color: white;
+    }
+
+    .user-score {
+        font-weight: bold;
     }
 
     .md-overlay {
