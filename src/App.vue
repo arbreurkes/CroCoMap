@@ -32,6 +32,9 @@
                 <md-list-item @click="showNavigation = false" to="/verify/">
                     Verify
                 </md-list-item>
+                <md-list-item @click="showNavigation = false" to="/tutorial/">
+                    Tutorial
+                </md-list-item>
             </md-list>
         </md-drawer>
         <md-content class="main-content" id="main-content">

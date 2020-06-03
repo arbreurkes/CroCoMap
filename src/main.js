@@ -12,6 +12,7 @@ import 'vue-material/dist/theme/default.css';
 import Find from "./components/pages/Find";
 import Fix from "./components/pages/Fix";
 import Verify from "./components/pages/Verify";
+import Tutorial from "./components/pages/Tutorial";
 
 window.$ = $;
 Vue.use(VueRouter);
@@ -59,6 +60,12 @@ const routes = [
     path: '/verify/*',
     name: 'Verify',
     component: Verify,
+    props: {}
+  },
+  {
+    path: '/tutorial/*',
+    name: 'Tutorial',
+    component: Tutorial,
     props: {}
   }
 ];
