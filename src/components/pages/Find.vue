@@ -27,8 +27,9 @@
             </md-tab>
             <md-tab id="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
                     to="/find/tabTwo">
+                <div id='overlay' v-on:click="annotateFunc"></div>
                 <md-button class="md-raised md-primary annotate-btn" v-on:click="addPin">Add pin</md-button>
-                <div ref="pano" class="map" v-on:click="annotateFunc"></div>
+                <div ref="pano" class="map"></div>
             </md-tab>
         </md-tabs>
         <hr class="tab-divider"/>
@@ -55,7 +56,6 @@
                     {lat: -90, lng: -90}, {lat: -90, lng: 180}, {lat: -90, lng: 90}, {lat: -90, lng: -90}],
                 innerCoords: [],
                 showSnackbar: false,
-                annotateActive: false,
                 // innerCoords: [{lng: 4.3583259998, lat: 52.0109693785},
                 //     {lng: 4.3581046768, lat: 52.0113134101},
                 //     {lng: 4.357844388, lat: 52.0112506756},
@@ -200,39 +200,38 @@
                 });
             },
             annotateFunc: function(ev) {
-                if (this.annotateActive) {
-                    event.stopPropagation();
-                    event.preventDefault();
-                    this.annotateActive = false;
+                this.annotateActive = false;
 
-                    var panoRef = this.$refs.pano;
-                    var width = panoRef.clientWidth;
-                    var height = panoRef.clientHeight;
+                var overlay = document.getElementById('overlay');
+                var width = overlay.clientWidth;
+                var height = overlay.clientHeight;
 
-                    var normX = (ev.clientX - panoRef.offsetLeft) / width;
-                    var normY = 1 - (ev.clientY - panoRef.offsetTop) / height;
+                var normX = (ev.clientX - overlay.offsetLeft) / width;
+                var normY = 1 - (ev.clientY - overlay.offsetTop) / height;
 
-                    var position = this.pano.getPosition();
-                    var zoom = this.pano.getZoom();
-                    var {heading, pitch} = this.pano.getPov();
-                    var fov = (180/Math.pow(2,zoom));
+                var position = this.pano.getPosition();
+                var zoom = this.pano.getZoom();
+                var {heading, pitch} = this.pano.getPov();
+                var fov = (180/Math.pow(2,zoom));
 
-                    var r = Raycast.createNew(heading, pitch, normX, normY, fov, width, height);
-                    var l = r.get_latlng(position.lat(),position.lng());
+                var r = Raycast.createNew(heading, pitch, normX, normY, fov, width, height);
+                var l = r.get_latlng(position.lat(),position.lng());
 
-                    new this.google.maps.Marker({
-                        position: l,
-                        map: this.pano,
-                        title: 'Annotation'
-                    });
-                    console.log('annotation set');
-                }
+                new this.google.maps.Marker({
+                    position: l,
+                    map: this.pano,
+                    title: 'Annotation'
+                });
+
+                overlay.style.visibility = 'hidden';
             },
+
             addPin: function () {
-                this.annotateActive = true;
-                this.pano.options['clickToGo'] = false;
-                this.pano.options['linksControl'] = false;
-                this.pano.options['zoomControl'] = false;
+                var panoRef = this.$refs.pano;
+                var d = document.getElementById('overlay');
+                d.style.width = panoRef.clientWidth+'px';
+                d.style.height = panoRef.clientHeight+'px';
+                d.style.visibility = 'visible';            
             }
         }
     };
@@ -298,5 +297,13 @@
         position: absolute;
         top: 50%;
         z-index: 999;
+    }
+
+    #overlay {
+        position: absolute;
+        top: 0px;
+        z-index: 999;
+        background-color: rgba(0,0,0,0.4);
+        visibility: hidden;
     }
 </style>
