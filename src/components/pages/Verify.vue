@@ -79,26 +79,35 @@
         },
         computed: {
             snapShots: function () {
-                return this.getSnapshots();
+                return this.getVerifySnapshots();
             },
             votes: function () {
                 return this.getVerifyVotes();
             }
         },
         watch: {
-            votes: function () {
-                if (this.snapShots.length > this.voteIndex + 1) {
-                    this.voteIndex++;
-                } else {
-                    this.done = true;
+            snapShots: function () {
+                this.done = this.snapShots.length === 0;
+            },
+            votes: {
+                immediate: true,
+                handler: function () {
+                    if (this.snapShots.length === 0) {
+                        this.done = true;
+                    } else if (this.snapShots.length > this.voteIndex + 1) {
+                        this.voteIndex++;
+                    } else {
+                        this.done = true;
+                    }
                 }
             }
         },
         mounted: function () {
+            this.loadVerifySnapshots();
         },
         methods: {
-            ...mapActions(['updateVerifyVotes']),
-            ...mapGetters(['getSnapshots', 'getVerifyVotes']),
+            ...mapActions(['updateVerifyVotes', 'loadVerifySnapshots']),
+            ...mapGetters(['getVerifySnapshots', 'getVerifyVotes']),
             uncertain: function () {
                 this.updateVerifyVotes("?");
                 this.uncertainPrompt = false;
