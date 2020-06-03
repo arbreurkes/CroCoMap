@@ -24,14 +24,43 @@
                 md-label="All set!"
                 md-description="You have completed your verify tasks for now. Thank you!">
         </md-empty-state>
-        <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showSnackbar" md-persistent>
-            <span style="width: 100%; text-align: center;">Please stay within the allocated area!</span>
+        <md-dialog :md-active="uncertainPrompt">
+            <md-dialog-title class="dialog-title dialog-title-custom">I don't know.</md-dialog-title>
+            <md-dialog-content class="dialog-content dialog-content-custom">
+                <md-empty-state
+                        md-icon="help_outline"
+                        md-description="Only use this options if you really do not know whether this object is potentially risky.">
+                    <span class="button-span">
+                        <md-button class="vote-button md-raised" @click="uncertain()">Confirm</md-button>
+                        <md-button class="omit-button md-raised" @click="uncertainPrompt = false">CANCEL</md-button>
+                    </span>
+                </md-empty-state>
+            </md-dialog-content>
+        </md-dialog>
+        <md-dialog :md-active="omitPrompt">
+            <md-dialog-title class="dialog-title dialog-title-custom">Is this object not risky?</md-dialog-title>
+            <md-dialog-content class="dialog-content dialog-content-custom">
+                <md-empty-state
+                        md-icon="remove_circle_outline"
+                        md-description="If you mark this object as not risky, you will not be able to vote on the other snapshots.">
+                    <span class="button-span">
+                        <md-button class="vote-button md-raised" @click="omit()">Confirm</md-button>
+                        <md-button class="omit-button md-raised" @click="omitPrompt = false">CANCEL</md-button>
+                    </span>
+                </md-empty-state>
+            </md-dialog-content>
+        </md-dialog>
+        <md-snackbar class="vote-snackbar" md-position="center" :md-duration="Infinity" :md-active="!done" md-persistent>
+            <span style="width: 100%; text-align: center;">
+                <md-button class="unct-button md-raised" @click="uncertainPrompt = true">UNCERTAIN</md-button>
+                <md-button class="omit-button md-raised" @click="omitPrompt = true">NO RISK</md-button>
+            </span>
         </md-snackbar>
     </div>
 </template>
 <script>
     import VerifyCard from "../elements/VerifyCard";
-    import {mapGetters} from 'vuex'
+    import {mapActions, mapGetters} from 'vuex'
     import StreetviewCard from "../elements/StreetviewCard";
 
     export default {
@@ -42,9 +71,10 @@
         },
         data: function () {
             return {
-                showSnackbar: false,
                 voteIndex: 0,
-                done: false
+                done: false,
+                uncertainPrompt: false,
+                omitPrompt: false,
             }
         },
         computed: {
@@ -67,7 +97,16 @@
         mounted: function () {
         },
         methods: {
-            ...mapGetters(['getSnapshots', 'getVerifyVotes'])
+            ...mapActions(['updateVerifyVotes']),
+            ...mapGetters(['getSnapshots', 'getVerifyVotes']),
+            uncertain: function () {
+                this.updateVerifyVotes("?");
+                this.uncertainPrompt = false;
+            },
+            omit: function () {
+                this.updateVerifyVotes(null);
+                this.omitPrompt = false;
+            }
         }
     };
 </script>
@@ -85,5 +124,49 @@
 
     .md-layout {
         margin-bottom: 16px;
+    }
+
+    .dialog-title-custom {
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    .dialog-content-custom {
+        padding-bottom: 0;
+    }
+
+    .vote-snackbar {
+        width: 33%;
+    }
+
+    .button-span {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .md-snackbar-content .md-button:first-child {
+        margin-left: 4px !important;
+        /*margin-right: 4px !important;*/
+    }
+
+    .button-span .vote-button, .button-span .unct-button, .button-span .omit-button {
+        margin-left: 4px !important;
+        margin-right: 4px !important;
+    }
+
+    .vote-button, .unct-button, .omit-button {
+        color: white !important;
+    }
+
+    .vote-button {
+        background-color: var(--forest-green) !important;
+    }
+
+    .unct-button {
+        background-color: #a1a1a1 !important;
+    }
+
+    .omit-button {
+        background-color: #d32f2f !important;
     }
 </style>
