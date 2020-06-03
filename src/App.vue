@@ -83,6 +83,11 @@
     }
 </script>
 <style>
+    body {
+        height: 100%;
+        overflow: hidden;
+    }
+
     :root {
         --MSU-green: #243E36;
         --metallic-gold: #C2A83E;
