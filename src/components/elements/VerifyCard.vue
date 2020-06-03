@@ -37,7 +37,7 @@
             </md-dialog-content>
         </md-dialog>
         <md-dialog :md-active="uncertainPrompt">
-            <md-dialog-title class="dialog-title">Are you uncertain?</md-dialog-title>
+            <md-dialog-title class="dialog-title">I don't know.</md-dialog-title>
             <md-dialog-content class="dialog-content">
                 <md-empty-state
                         md-icon="help_outline"
