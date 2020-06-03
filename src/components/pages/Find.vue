@@ -25,6 +25,7 @@
                 >
                 </GmapMap>
             </md-tab>
+            <md-button class="md-raised md-primary" v-on:click="addPin">Add pin</md-button>
             <md-tab id="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
                     to="/find/tabTwo">
                 <div ref="pano" class="map"></div>
@@ -102,10 +103,12 @@
             ...mapGetters(["getLocation", "getCoordinates", "getPosition"]),
             ...mapMutations(["setPosition"]),
             initMap: function () {
+
                 this.$refs.mapRef.$mapPromise.then((map) => {
-                    var bounds = map.getBounds();
-                    var latBounds = bounds.Ya;
-                    var lngBounds = bounds.Ua;
+                    // TODO: Uncomment this
+                    // var bounds = map.getBounds();
+                    var latBounds = {i: 52.00972546793214, j: 52.01358197692993} //= bounds.Ya;
+                    var lngBounds = {i: 4.349881421100981, j: 4.368249188434965} // = bounds.Ua;
                     var latDiff = Math.abs(latBounds.i - latBounds.j);
                     var lngDiff = Math.abs(lngBounds.i - lngBounds.j);
 
@@ -167,6 +170,8 @@
                         source: this.google.maps.StreetViewSource.OUTDOOR
                     });
                     map.setStreetView(pano);
+                    
+                    this.pano = pano;
 
                     pano.addListener('position_changed', () => {
                         var pos = pano.getPosition();
@@ -188,7 +193,39 @@
                             }
                         }
                     });
+
+                    
                 });
+            },
+            addPin: function () {
+                var position = this.pano.getPosition();
+                // var zoom = this.pano.getZoom();
+                // var {heading, pitch} = this.pano.getPov();
+
+                var marker = new this.google.maps.Marker({
+                    position: position,
+                    map: this.pano,
+                    title: 'Annotation'
+                });
+                console.log(marker);
+
+                // TODO: Adapt Sihang's code
+                // var width = null;
+                // var height = null;
+                // var ly = null;
+                // var ry = null;
+
+                // var y = 1.0 - Math.max(ly,ry)*2.0;
+                // var x = (lx + rx) - 1.0;
+                // var fov = (180/Math.pow(2,zoom));
+                // var r = Raycast.createNew(heading, pitch, x, y, fov, cvs.width/cvs.height);
+                // var l = r.get_latlng(location.lat(),location.lng());
+                // if (l!=null) {
+                //     warn("The object is labeled.",false);
+                //     addLabel(l);
+                //     add_row(location,l,heading,pitch,zoom,lx,ly,rx,ry);
+                // }
+                // else warn("Unable to label the object. Please move closer to the object.",true);
             }
         }
     };

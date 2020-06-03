@@ -8,7 +8,7 @@ Vue.use(Vuex);
 export default new Vuex.Store({
     state: {
         foo: [],
-        location: null,
+        location: "Delft", // TODO: Change to null
         position: null,
         locations: {
             "Beijing": {lat: 39.9390731, lng: 116.1172741},

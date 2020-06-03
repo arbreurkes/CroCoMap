@@ -29,7 +29,9 @@
         </md-drawer>
         <md-content class="main-content" id="main-content">
             <router-view></router-view>
+            <!-- TODO: UNCOMMENT THIS!
             <md-dialog :md-active="locationPrompt">
+            
                 <md-dialog-title>Where are you currently located?</md-dialog-title>
                 <md-dialog-content>
                     <md-field>
@@ -44,7 +46,9 @@
                         <md-button class="md-primary md-raised confirm-button" @click="confirmLocation" :disabled="!location">confirm</md-button>
                     </md-dialog-actions>
                 </md-dialog-content>
+             
             </md-dialog>
+        -->
         </md-content>
     </div>
 </template>
