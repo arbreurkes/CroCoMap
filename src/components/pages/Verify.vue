@@ -145,7 +145,7 @@
     }
 
     .md-snackbar-content .md-button:first-child {
-        margin-left: 4px !important;
+        margin-left: -4px !important;
         /*margin-right: 4px !important;*/
     }
 
