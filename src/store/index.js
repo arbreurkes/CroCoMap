@@ -1,6 +1,7 @@
 import Vuex from 'vuex';
 import Vue from 'vue';
 import axios from 'axios';
+import { saveAs } from 'file-saver';
 
 Vue.use(Vuex);
 
@@ -16,7 +17,8 @@ export default new Vuex.Store({
             "Melbourne": {lat: -37.8136, lng: 144.9631}
         },
         verifySnapshots: [],
-        verifyVotes: []
+        verifyVotes: [],
+        lastSavedValue: null
     },
     getters: {
         getLocation: (state) => state.location,
@@ -29,7 +31,9 @@ export default new Vuex.Store({
         setLocation: (state, location) => (state.location = location),
         setPosition: (state, position) => (state.position = position),
         setVerifySnapshots: (state, object) => (state.verifySnapshots = object),
-        setVerifyVotes: (state, value) => (state.verifyVotes.push(value))
+        pushVerifySnapshot: (state, value) => (state.verifySnapshots.push(value)),
+        setVerifyVotes: (state, value) => (state.verifyVotes.push(value)),
+        setLastSavedValue: (state, value) => (state.lastSavedValue = value)
     },
     actions: {
         updateVerifyVotes({commit}, keyValue) {
@@ -39,6 +43,11 @@ export default new Vuex.Store({
             axios.get('/resources/verifySnapshots.json').then(response => {
                 commit('setVerifySnapshots', response.data)
             });
+        },
+        async storeVerifySnapshots({commit}, value) { // value[] -> [0] = fileName, [1] = value
+            var blob = new Blob([JSON.stringify(value[1])], {type: "text/plain"});
+            saveAs(blob, value[0]);
+            commit('setLastSavedValue', value[1])
         }
     }
 });
