@@ -19,6 +19,7 @@
             </md-card-content>
             <md-card-actions v-if="image !== ''" class="actions">
                 <md-button class="vote-button md-raised" @click="verifyPrompt = true">VOTE</md-button>
+                <md-button class="unct-button md-raised" @click="uncertainPrompt = true">UNCERTAIN</md-button>
                 <md-button class="omit-button md-raised" @click="omitPrompt = true">NO RISK</md-button>
             </md-card-actions>
         </md-card>
@@ -31,6 +32,19 @@
                     <span class="button-span">
                         <md-button class="vote-button md-raised" @click="verify()">Confirm</md-button>
                         <md-button class="omit-button md-raised" @click="verifyPrompt = false">CANCEL</md-button>
+                    </span>
+                </md-empty-state>
+            </md-dialog-content>
+        </md-dialog>
+        <md-dialog :md-active="uncertainPrompt">
+            <md-dialog-title class="dialog-title">Are you uncertain?</md-dialog-title>
+            <md-dialog-content class="dialog-content">
+                <md-empty-state
+                        md-icon="help_outline"
+                        md-description="Only use this options if you really do not know whether this object is potentially risky.">
+                    <span class="button-span">
+                        <md-button class="vote-button md-raised" @click="uncertain()">Confirm</md-button>
+                        <md-button class="omit-button md-raised" @click="uncertainPrompt = false">CANCEL</md-button>
                     </span>
                 </md-empty-state>
             </md-dialog-content>
@@ -65,6 +79,7 @@
         data: function() {
           return {
               verifyPrompt: false,
+              uncertainPrompt: false,
               omitPrompt: false,
               selectedAnnotation: null
           }
@@ -76,6 +91,10 @@
             verify: function() {
                 this.updateVerifyVotes(this.title);
                 this.verifyPrompt = false;
+            },
+            uncertain: function () {
+                this.updateVerifyVotes("?");
+                this.uncertainPrompt = false;
             },
             omit: function () {
                 this.updateVerifyVotes(null);
@@ -109,12 +128,16 @@
         margin-right: 4px;
     }
 
-    .vote-button, .omit-button {
+    .vote-button, .omit-button, .unct-button {
         color: white !important;
     }
 
     .vote-button {
         background-color: var(--forest-green) !important;
+    }
+
+    .unct-button {
+        background-color: #a1a1a1 !important;
     }
 
     .omit-button {
