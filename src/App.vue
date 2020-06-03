@@ -5,6 +5,10 @@
                 <md-icon>menu</md-icon>
             </md-button>
             <span class="md-title">CroCoMap</span>
+            <md-avatar class="md-avatar-icon">
+                <md-icon>person</md-icon>
+            </md-avatar>
+            <span class="user-info">Crowdworker#1<br><md-icon>military_tech</md-icon>42</span>
         </md-toolbar>
 
         <md-drawer class="md-drawer md-drawer--modal" :md-active.sync="showNavigation" md-swipeable>
@@ -103,6 +107,17 @@
 
     .top-bar .md-title, .md-toolbar.md-theme-default .md-icon {
         color: var(--ivory-white) !important;
+    }
+
+    .md-avatar {
+        margin-right: 0 !important;
+        background: var(--mdc-theme-secondary) !important;
+    }
+
+    .user-info {
+        padding-left: 8px;
+        text-align: center;
+        color: white;
     }
 
     .md-overlay {
