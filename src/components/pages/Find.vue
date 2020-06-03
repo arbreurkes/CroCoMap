@@ -27,8 +27,29 @@
             </md-tab>
             <md-tab id="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
                     to="/find/tabTwo">
-                <div id='overlay' v-on:click="annotateFunc"></div>
-                <md-button class="md-raised md-primary annotate-btn" v-on:click="addPin">Add pin</md-button>
+                <div ref="overlay" class='overlay' v-if="showOverlay" @click="annotateFunc"></div>
+                <span class="options">
+                    <md-speed-dial class="" md-direction="top">
+                        <md-speed-dial-target class="annotate-button">
+                            <md-icon class="md-morph-initial">menu_open</md-icon>
+                            <md-icon class="md-morph-final">sentiment_satisfied_alt</md-icon>
+                        </md-speed-dial-target>
+                        <md-speed-dial-content class="">
+                            <md-button class="md-icon-button">
+                                <md-tooltip md-direction="right">Done!</md-tooltip>
+                                <md-icon>done</md-icon>
+                            </md-button>
+                            <md-button class="md-icon-button">
+                                <md-tooltip md-direction="right">Show Help</md-tooltip>
+                                <md-icon>help</md-icon>
+                            </md-button>
+                        </md-speed-dial-content>
+                    </md-speed-dial>
+                    <md-button class="md-fab md-raised md-primary annotate-button" v-on:click="toggleAnnotation">
+                        <md-tooltip class="big-annotation" md-direction="right">Add Annotation</md-tooltip>
+                        <md-icon>push_pin</md-icon>
+                    </md-button>
+                </span>
                 <div ref="pano" class="map"></div>
             </md-tab>
         </md-tabs>
@@ -56,23 +77,7 @@
                     {lat: -90, lng: -90}, {lat: -90, lng: 180}, {lat: -90, lng: 90}, {lat: -90, lng: -90}],
                 innerCoords: [],
                 showSnackbar: false,
-                // innerCoords: [{lng: 4.3583259998, lat: 52.0109693785},
-                //     {lng: 4.3581046768, lat: 52.0113134101},
-                //     {lng: 4.357844388, lat: 52.0112506756},
-                //     {lng: 4.3576394193, lat: 52.0115475968},
-                //     {lng: 4.3599021447, lat: 52.0124058491},
-                //     {lng: 4.3603868922, lat: 52.011960599},
-                //     {lng: 4.360777354, lat: 52.0119813154},
-                //     {lng: 4.3607659477, lat: 52.0118230383},
-                //     {lng: 4.3605600584, lat: 52.0117503003},
-                //     {lng: 4.3603482861, lat: 52.0118836737},
-                //     {lng: 4.3594911572, lat: 52.0115163537},
-                //     {lng: 4.3596133042, lat: 52.0114008894},
-                //     {lng: 4.3595244125, lat: 52.0113659809},
-                //     {lng: 4.3593954908, lat: 52.0114923702},
-                //     {lng: 4.3583433611, lat: 52.0110958044},
-                //     {lng: 4.3583865843, lat: 52.0109914234},
-                //     {lng: 4.3583259998, lat: 52.0109693785}]
+                showOverlay: false
             }
         },
         computed: {
@@ -109,8 +114,8 @@
                 this.$refs.mapRef.$mapPromise.then((map) => {
                     // TODO: Uncomment this
                     // var bounds = map.getBounds();
-                    var latBounds = {i: 52.00972546793214, j: 52.01358197692993} //= bounds.Ya;
-                    var lngBounds = {i: 4.349881421100981, j: 4.368249188434965} // = bounds.Ua;
+                    var latBounds = {i: 52.00972546793214, j: 52.01358197692993}; //= bounds.Ya;
+                    var lngBounds = {i: 4.349881421100981, j: 4.368249188434965}; // = bounds.Ua;
                     var latDiff = Math.abs(latBounds.i - latBounds.j);
                     var lngDiff = Math.abs(lngBounds.i - lngBounds.j);
 
@@ -172,7 +177,7 @@
                         source: this.google.maps.StreetViewSource.OUTDOOR
                     });
                     map.setStreetView(pano);
-                    
+
                     this.pano = pano;
 
                     pano.addListener('position_changed', () => {
@@ -196,13 +201,13 @@
                         }
                     });
 
-                    
+
                 });
             },
             annotateFunc: function(ev) {
                 this.annotateActive = false;
 
-                var overlay = document.getElementById('overlay');
+                var overlay = this.$refs.overlay;
                 var width = overlay.clientWidth;
                 var height = overlay.clientHeight;
 
@@ -226,12 +231,9 @@
                 overlay.style.visibility = 'hidden';
             },
 
-            addPin: function () {
-                var panoRef = this.$refs.pano;
-                var d = document.getElementById('overlay');
-                d.style.width = panoRef.clientWidth+'px';
-                d.style.height = panoRef.clientHeight+'px';
-                d.style.visibility = 'visible';            
+            toggleAnnotation: function () {
+                // var panoRef = this.$refs.pano;
+                this.showOverlay = !this.showOverlay;
             }
         }
     };
@@ -293,17 +295,32 @@
         width: calc(100% + 32px);
     }
 
-    .annotate-btn {
+    .options {
+        width: 120px;
+        justify-content: center;
         position: absolute;
-        top: 50%;
+        left: calc(150vw - 60px);
+        bottom: 10px;
         z-index: 999;
     }
 
-    #overlay {
+    .annotate-button {
+        margin-right: 0;
+        margin-top: 104px;
+        background: var(--forest-green) !important;
+    }
+
+    .big-annotation {
+        margin-left: 8px;
+    }
+
+    .overlay {
         position: absolute;
-        top: 0px;
+        top: 0;
+        left: 100vw;
         z-index: 999;
+        width: 100vw;
+        height: calc(100vh - 96px);
         background-color: rgba(0,0,0,0.4);
-        visibility: hidden;
     }
 </style>
