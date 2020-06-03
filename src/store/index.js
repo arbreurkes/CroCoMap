@@ -44,7 +44,7 @@ export default new Vuex.Store({
                 commit('setVerifySnapshots', response.data)
             });
         },
-        async storeVerifySnapshots({commit}, value) { // value[] -> [0] = fileName, [1] = value
+        async storeFile({commit}, value) { // value[] -> [0] = fileName, [1] = value
             var blob = new Blob([JSON.stringify(value[1])], {type: "text/plain"});
             saveAs(blob, value[0]);
             commit('setLastSavedValue', value[1])
