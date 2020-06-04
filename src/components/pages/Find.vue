@@ -208,18 +208,25 @@
                 this.annotateActive = false;
 
                 var overlay = this.$refs.overlay;
+
+                // Width and height of overlay div
                 var width = overlay.clientWidth;
                 var height = overlay.clientHeight;
 
-                var normX = (ev.clientX - overlay.offsetLeft) / width;
-                var normY = 1 - (ev.clientY - overlay.offsetTop) / height;
+                // x- and y-value from the top left corner of the overlay div 
+                // (same size and position as street view div)
+                var y = ev.offsetY;
+                var x = ev.offsetX;
+                var normX = x / width;
+                var normY = 1 - y / height; // set y to increase from the bottom left corner
 
                 var position = this.pano.getPosition();
                 var zoom = this.pano.getZoom();
                 var {heading, pitch} = this.pano.getPov();
                 var fov = (180/Math.pow(2,zoom));
 
-                var r = Raycast.createNew(heading, pitch, normX, normY, fov, width, height);
+                var r = Raycast.createNew(heading, pitch, normX, normY, fov, width/height);
+                // This doesn't return the right location :(
                 var l = r.get_latlng(position.lat(),position.lng());
 
                 new this.google.maps.Marker({
@@ -227,12 +234,9 @@
                     map: this.pano,
                     title: 'Annotation'
                 });
-
-                overlay.style.visibility = 'hidden';
+                this.showOverlay = !this.showOverlay;
             },
-
             toggleAnnotation: function () {
-                // var panoRef = this.$refs.pano;
                 this.showOverlay = !this.showOverlay;
             }
         }
@@ -322,5 +326,13 @@
         width: 100vw;
         height: calc(100vh - 96px);
         background-color: rgba(0,0,0,0.4);
+    }
+
+    .dot {
+        height: 25px;
+        width: 25px;
+        background-color: #f55;
+        border-radius: 50%;
+        display: inline-block;
     }
 </style>

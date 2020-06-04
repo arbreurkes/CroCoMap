@@ -6,6 +6,7 @@ var Raycast = {
 
     createNew: function(heading, pitch, norm_screen_x, norm_screen_y, fov, aspect)
     {
+        // console.log(`heading: ${heading}, pitch: ${pitch}, x: ${norm_screen_x}, y: ${norm_screen_y}, fov: ${fov}, aspect: ${aspect}`);
         var raycast = {};
         raycast.heading = heading;
         raycast.pitch = pitch;
