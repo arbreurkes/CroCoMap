@@ -130,10 +130,9 @@
             initMap: function () {
 
                 this.$refs.mapRef.$mapPromise.then((map) => {
-                    // TODO: Uncomment this
-                    // var bounds = map.getBounds();
-                    var latBounds = {i: 52.00972546793214, j: 52.01358197692993}; //= bounds.Ya;
-                    var lngBounds = {i: 4.349881421100981, j: 4.368249188434965}; // = bounds.Ua;
+                    var bounds = map.getBounds();
+                    var latBounds = bounds.Ya;
+                    var lngBounds = bounds.Ua;
                     var latDiff = Math.abs(latBounds.i - latBounds.j);
                     var lngDiff = Math.abs(lngBounds.i - lngBounds.j);
 

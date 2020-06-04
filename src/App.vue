@@ -36,9 +36,7 @@
         </md-drawer>
         <md-content class="main-content" id="main-content">
             <router-view></router-view>
-            <!-- TODO: UNCOMMENT THIS!
             <md-dialog :md-active="locationPrompt">
-            
                 <md-dialog-title>Where are you currently located?</md-dialog-title>
                 <md-dialog-content>
                     <md-field>
@@ -55,7 +53,6 @@
                 </md-dialog-content>
              
             </md-dialog>
-        -->
         </md-content>
     </div>
 </template>
