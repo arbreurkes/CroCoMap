@@ -1,5 +1,5 @@
 <template>
-    <div class="tasks-page">
+    <div class="tasks-page" ref="find">
         <md-tabs md-alignment="fixed" md-sync-route>
             <template slot="md-tab" slot-scope="{tab}">
                 <span class="tab-label">
@@ -25,23 +25,12 @@
                 >
                 </GmapMap>
             </md-tab>
-            <md-tab id="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
+            <md-tab id="tab-two" class="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
                     to="/find/tabTwo">
-                <div ref="overlay" class='overlay' v-if="showOverlay" @click="annotateFunc">
-                    <md-card class="instructions">
-                    <md-card-header>
-                        <div class="md-title">Instructions</div>
-                    </md-card-header>
-
-                    <md-card-content>
-                        Place a pin by clicking a point on the ground in the panorama. 
-                        Best results are achieved when close to the object and clicking within the white circle.
-                    </md-card-content>
-                    </md-card>
-
-
+                <div ref="overlay" class='overlay overlays' v-if="showOverlay" @click="annotateFunc">
+                    <div class="overlay-circle"></div>
                 </div>
-                <div class="overlay-circle" v-if="showOverlay"></div>
+                <canvas ref="canvas" class="canvas" v-if="showOverlay"></canvas>
                 <span class="options">
                     <md-speed-dial class="" md-direction="bottom">
                         <md-speed-dial-target class="annotate-button">
@@ -88,6 +77,9 @@
             return {
                 position: {lat: 0, lng: 0},
                 panoPosition: {},
+                zoom: 1,
+                pov: {},
+                fov: 90,
                 previousPosition: this.position,
                 polygons: [],
                 outerCoords: [{lat: 90, lng: -90}, {lat: 90, lng: 90}, {lat: 90, lng: 180}, {lat: 90, lng: -90},
@@ -95,7 +87,9 @@
                 innerCoords: [],
                 showSnackbar: false,
                 showPinSnackbar: false,
-                showOverlay: false
+                showOverlay: false,
+                canvasSource: "",
+                imageUrl: ""
             }
         },
         computed: {
@@ -128,7 +122,6 @@
             ...mapGetters(["getLocation", "getCoordinates", "getPosition"]),
             ...mapMutations(["setPosition"]),
             initMap: function () {
-
                 this.$refs.mapRef.$mapPromise.then((map) => {
                     var bounds = map.getBounds();
                     var latBounds = bounds.Ya;
@@ -230,18 +223,14 @@
                 var width = overlay.clientWidth;
                 var height = overlay.clientHeight;
 
-                // normalized x- and y-value based on the overlay div 
+                // normalized x- and y-value based on the overlay div
                 // in (-1, 1) range
                 var normX = 2 * ev.offsetX / width - 1;
                 var normY = 1 - 2 * ev.offsetY / height;
 
-                var position = this.pano.getPosition();
-                var zoom = this.pano.getZoom();
-                var {heading, pitch} = this.pano.getPov();
-                var fov = (180/Math.pow(2,zoom));
-
-                var r = Raycast.createNew(heading, pitch, normX, normY, fov, width/height);
-                var l = r.get_latlng(position.lat(),position.lng());
+                var {heading, pitch} = this.pov;
+                var r = Raycast.createNew(heading, pitch, normX, normY, this.fov, width/height);
+                var l = r.get_latlng(this.panoPosition.lat(), this.panoPosition.lng());
 
                 if (l === null) {
                     this.showPinSnackbar = true;
@@ -252,12 +241,45 @@
                         map: this.pano,
                         title: 'Annotation'
                     });
+
+                    this.toggleAnnotation();
                 }
-                
-                this.showOverlay = !this.showOverlay;
             },
-            toggleAnnotation: function () {
+            toggleAnnotation: async function () {
                 this.showOverlay = !this.showOverlay;
+
+                if (this.showOverlay) {
+                    this.$nextTick(() => {
+                        this.panoPosition = this.pano.getPosition();
+                        this.zoom = this.pano.getZoom();
+                        this.pov = this.pano.getPov();
+                        this.fov = (180 / Math.pow(2, this.zoom));
+
+                        var url = "https://maps.googleapis.com/maps/api/streetview?size=640x640" +
+                            "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() +
+                            "&fov=" + this.fov +
+                            "&heading=" + this.pov.heading + "" +
+                            "&pitch=" + this.pov.pitch +
+                            "&key=" + process.env.VUE_APP_API_KEY;
+
+                        var image = new Image();
+                        var that = this;
+                        image.onload = function() {
+                            var canvas = that.$refs.canvas;
+
+                            canvas.width = image.width;
+                            canvas.height = image.height;
+                            var ctx = canvas.getContext("2d");
+                            ctx.drawImage(image, 0, 0);
+                            this.imageUrl = canvas.toDataURL("image/png");
+                        };
+
+                        // set attributes and src
+                        image.setAttribute('crossOrigin', 'anonymous'); //
+                        image.src = url;
+
+                    });
+                }
             }
         }
     };
@@ -286,6 +308,7 @@
     .md-tab {
         height: calc(100vh - 96px);
         max-height: 100%;
+        /*width: 100%;*/
     }
 
     .tab-one {
@@ -338,31 +361,38 @@
         margin-top: 8px;
     }
 
-    .overlay {
+    .overlays {
         position: absolute;
         top: 0;
         left: 100vw;
-        z-index: 999;
         width: 100vw;
-        height: calc(100vh - 96px);
+        height: calc(100vh - 96px) !important;
+    }
+
+    .canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 640px;
+        height: 640px;
+        z-index: -1;
+    }
+
+    .overlay {
+        z-index: 999;
         background-color: rgba(0,0,0,0.3);
     }
 
     .overlay-circle {
-        position: absolute;
-        top: 25vh;
-        left: 137vw;
+        margin-left: calc(50vw - 25vh);
+        margin-top: calc(50vh - 25vh);
         height: 50vh;
         width: 50vh;
         border: solid 3px rgb(255,255,255);
         border-radius: 50%;
-        z-index: 998;
     }
 
-    .md-card {
-        width: 320px;
-        margin: 0px;
-        display: inline-block;
-        vertical-align: top;
+    .tab-one, .tab-two {
+        padding: 16px !important;
     }
 </style>
