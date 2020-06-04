@@ -198,6 +198,10 @@
         transform: none !important;
     }
 
+    .vote-button, .omit-button, .unct-button {
+        color: white !important;
+    }
+
     .vote-button {
         background-color: var(--forest-green) !important;
     }

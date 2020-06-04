@@ -2,7 +2,7 @@
     <div class="verify-page">
         <div v-if="!done">
             <div class="md-layout md-gutter">
-                <streetview-card :position="this.snapShots[voteIndex]['location']" :pov="this.snapShots[voteIndex]['pov']" :inGrid="true" size="md-size-33"></streetview-card>
+                <streetview-card :position="this.snapShots[voteIndex]['position']" :pov="this.snapShots[voteIndex]['pov']" :inGrid="true" size="md-size-33"></streetview-card>
                 <verify-card title="First" :image="this.snapShots[voteIndex]['First']" :index="voteIndex" :inGrid="true"
                              size="md-size-33"></verify-card>
                 <verify-card title="Second" :image="this.snapShots[voteIndex]['Second']" :index="voteIndex" :inGrid="true"
@@ -135,15 +135,6 @@
         margin-bottom: 16px;
     }
 
-    .dialog-title-custom {
-        text-align: center;
-        margin-bottom: 0;
-    }
-
-    .dialog-content-custom {
-        padding-bottom: 0;
-    }
-
     .vote-snackbar {
         width: 33%;
     }
@@ -158,12 +149,22 @@
         /*margin-right: 4px !important;*/
     }
 
+    .vote-button, .unct-button, .omit-button {
+        color: white !important;
+    }
+</style>
+<style>
+    .dialog-title-custom {
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    .dialog-content-custom {
+        padding-bottom: 0;
+    }
+
     .button-span .vote-button, .button-span .unct-button, .button-span .omit-button {
         margin-left: 4px !important;
         margin-right: 4px !important;
-    }
-
-    .vote-button, .unct-button, .omit-button {
-        color: white !important;
     }
 </style>

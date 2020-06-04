@@ -47,12 +47,15 @@
                             </md-button>
                         </md-speed-dial-content>
                     </md-speed-dial>
-                    <md-button :class="['md-fab', 'md-raised', 'md-primary', 'annotate-button', pinButtonClass]" @click="toggleAnnotation">
+                    <md-button :class="['md-fab', 'md-raised', 'md-primary', 'annotate-button', pinButtonClass]"
+                               @click="toggleAnnotation">
                         <md-tooltip class="big-annotation" md-direction="bottom">{{pinButtonTooltip}}</md-tooltip>
                         <md-icon>{{pinButtonIcon}}</md-icon>
                     </md-button>
                 </span>
-                <md-button v-if="findStep === 1" :class="['md-fab', 'md-raised', 'md-primary', 'snapshot-button', 'vote-button']">
+                <md-button v-if="findStep === 1"
+                           :class="['md-fab', 'md-raised', 'md-primary', 'snapshot-button', 'vote-button']"
+                           @click="takeSnapshot">
                     <md-tooltip class="big-annotation" md-direction="bottom">Take Snapshot</md-tooltip>
                     <md-icon>add_a_photo</md-icon>
                 </md-button>
@@ -103,7 +106,9 @@
                     "Zoom all the way in, then click the screenshot button at the bottom of the screen."
                 ],
                 findStep: 0,
-                latestMarker: {}
+                latestMarker: {},
+                annotationIndex: 0,
+                annotations: []
             }
         },
         computed: {
@@ -111,23 +116,23 @@
             location: function () {
                 return this.getLocation()
             },
-            annotating: function() {
+            annotating: function () {
                 return this.showOverlay || this.findStep === 1;
             },
-            pinButtonClass: function() {
+            pinButtonClass: function () {
                 return this.annotating ? "omit-button" : "vote-button";
             },
             pinButtonIcon: function () {
                 return this.annotating ? "close" : "push_pin";
             },
-            pinButtonTooltip: function() {
+            pinButtonTooltip: function () {
                 return this.annotating ? "Cancel Annotation" : "Add Annotation";
             }
         },
         watch: {
             location: {
                 immediate: true,
-                handler: function() {
+                handler: function () {
                     if (this.location !== null) {
                         this.position = this.getCoordinates();
                         this.$nextTick(() => {
@@ -148,101 +153,102 @@
             ...mapGetters(["getLocation", "getCoordinates", "getPosition"]),
             ...mapMutations(["setPosition"]),
             initMap: function () {
-                this.$refs.mapRef.$mapPromise.then((map) => {
-                    var bounds = map.getBounds();
-                    var latBounds = bounds.Ya;
-                    var lngBounds = bounds.Ua;
-                    var latDiff = Math.abs(latBounds.i - latBounds.j);
-                    var lngDiff = Math.abs(lngBounds.i - lngBounds.j);
+                var that = this;
+                that.$refs.mapRef.$mapPromise.then((map) => {
+                    that.google.maps.event.addListenerOnce(map, 'idle', function(){
+                        var bounds = map.getBounds();
+                        var latBounds = bounds.Ya;
+                        var lngBounds = bounds.Ua;
+                        var latDiff = Math.abs(latBounds.i - latBounds.j);
+                        var lngDiff = Math.abs(lngBounds.i - lngBounds.j);
 
-                    var quadrants = [{lat: latBounds.i, lng: lngBounds.i},
-                        {lat: latBounds.i + latDiff / 2, lng: lngBounds.i},
-                        {lat: latBounds.i, lng: lngBounds.i + lngDiff / 2},
-                        {lat: latBounds.i + latDiff / 2, lng: lngBounds.i + lngDiff / 2}];
-                    for (var i = 0; i < 2; i++) {
-                        for (var j = i; j < i + 2; j++) {
-                            if (i + j < 1 || Math.random() + Math.random() >= 1) {
-                                var boxLatDiff = latDiff / 10;
-                                var boxLngDiff = lngDiff / 10;
+                        var quadrants = [{lat: latBounds.i, lng: lngBounds.i},
+                            {lat: latBounds.i + latDiff / 2, lng: lngBounds.i},
+                            {lat: latBounds.i, lng: lngBounds.i + lngDiff / 2},
+                            {lat: latBounds.i + latDiff / 2, lng: lngBounds.i + lngDiff / 2}];
+                        for (var i = 0; i < 2; i++) {
+                            for (var j = i; j < i + 2; j++) {
+                                if (i + j < 1 || Math.random() + Math.random() >= 1) {
+                                    var boxLatDiff = latDiff / 10;
+                                    var boxLngDiff = lngDiff / 10;
 
-                                var latRatio = Math.random();
-                                var lngRatio = Math.random();
-                                var startLat = Math.min(quadrants[i + j].lat + ((latDiff / 2) * latRatio),
-                                    quadrants[i + j].lat + (latDiff / 2) - boxLatDiff);
-                                var startLng = Math.min(quadrants[i + j].lng + ((lngDiff / 2) * lngRatio),
-                                    quadrants[i + j].lng + (lngDiff / 2) - boxLngDiff);
+                                    var latRatio = Math.random();
+                                    var lngRatio = Math.random();
+                                    var startLat = Math.min(quadrants[i + j].lat + ((latDiff / 2) * latRatio),
+                                        quadrants[i + j].lat + (latDiff / 2) - boxLatDiff);
+                                    var startLng = Math.min(quadrants[i + j].lng + ((lngDiff / 2) * lngRatio),
+                                        quadrants[i + j].lng + (lngDiff / 2) - boxLngDiff);
 
-                                this.innerCoords[this.innerCoords.length] = [{lat: startLat, lng: startLng},
-                                    {lat: startLat + boxLatDiff, lng: startLng},
-                                    {lat: startLat + boxLatDiff, lng: startLng + boxLngDiff},
-                                    {lat: startLat, lng: startLng + boxLngDiff},
-                                    {lat: startLat, lng: startLng}];
+                                    that.innerCoords[that.innerCoords.length] = [{lat: startLat, lng: startLng},
+                                        {lat: startLat + boxLatDiff, lng: startLng},
+                                        {lat: startLat + boxLatDiff, lng: startLng + boxLngDiff},
+                                        {lat: startLat, lng: startLng + boxLngDiff},
+                                        {lat: startLat, lng: startLng}];
 
-                                this.polygons[this.polygons.length] = new this.google.maps.Polygon({
-                                    paths: this.innerCoords[this.innerCoords.length - 1],
-                                    strokeColor: '#0000FF',
-                                    strokeOpacity: 0.3,
-                                    strokeWeight: 1,
-                                    map: map,
-                                    fillOpacity: 0.0
-                                });
+                                    that.polygons[that.polygons.length] = new that.google.maps.Polygon({
+                                        paths: that.innerCoords[that.innerCoords.length - 1],
+                                        strokeColor: '#0000FF',
+                                        strokeOpacity: 0.3,
+                                        strokeWeight: 1,
+                                        map: map,
+                                        fillOpacity: 0.0
+                                    });
 
-                                if (i + j === 0) {
-                                    this.panoPosition = {lat: startLat + (boxLatDiff / 2),
-                                        lng: startLng + (boxLngDiff / 2)}
+                                    if (i + j === 0) {
+                                        that.panoPosition = {
+                                            lat: startLat + (boxLatDiff / 2),
+                                            lng: startLng + (boxLngDiff / 2)
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    var paths = [this.outerCoords];
-                    this.innerCoords.forEach((o) => {
-                        paths.push(o.reverse())
-                    });
+                        var paths = [that.outerCoords];
+                        that.innerCoords.forEach((o) => {
+                            paths.push(o.reverse())
+                        });
 
-                    new this.google.maps.Polygon({
-                        paths: paths,
-                        strokeWeight: 0,
-                        map: map,
-                        fillColor: '#FF0000',
-                        fillOpacity: 0.35
-                    });
+                        new that.google.maps.Polygon({
+                            paths: paths,
+                            strokeWeight: 0,
+                            map: map,
+                            fillColor: '#FF0000',
+                            fillOpacity: 0.35
+                        });
 
-                    var pano = new this.google.maps.StreetViewPanorama(this.$refs.pano, {
-                        position: this.panoPosition,
-                        source: this.google.maps.StreetViewSource.OUTDOOR
-                    });
-                    map.setStreetView(pano);
+                        var pano = new that.google.maps.StreetViewPanorama(that.$refs.pano, {
+                            position: that.panoPosition,
+                            source: that.google.maps.StreetViewSource.OUTDOOR
+                        });
+                        map.setStreetView(pano);
 
-                    this.pano = pano;
+                        that.pano = pano;
 
-                    pano.addListener('position_changed', () => {
-                        var pos = pano.getPosition();
+                        pano.addListener('position_changed', () => {
+                            var pos = pano.getPosition();
 
-                        if (pos !== this.previousPosition) {
-                            var isInBounds = false;
-                            for (var i = 0; i < this.polygons.length; i++) {
-                                if (this.google.maps.geometry.poly.containsLocation(pos, this.polygons[i])) {
-                                    isInBounds = true;
-                                    break;
+                            if (pos !== that.previousPosition) {
+                                var isInBounds = false;
+                                for (var i = 0; i < that.polygons.length; i++) {
+                                    if (that.google.maps.geometry.poly.containsLocation(pos, that.polygons[i])) {
+                                        isInBounds = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!isInBounds) {
+                                    that.showSnackbar = true;
+                                    pano.setPosition(that.previousPosition);
+                                } else {
+                                    that.previousPosition = pos;
                                 }
                             }
-
-                            if (!isInBounds) {
-                                this.showSnackbar = true;
-                                pano.setPosition(this.previousPosition);
-                            } else {
-                                this.previousPosition = pos;
-                            }
-                        }
+                        });
                     });
-
-
                 });
             },
-            annotateFunc: function(ev) {
-                this.annotateActive = false;
-
+            annotateFunc: function (ev) {
                 var overlay = this.$refs.overlay;
 
                 // Width and height of overlay div
@@ -257,20 +263,24 @@
                 var position = this.pano.getPosition();
                 var zoom = this.pano.getZoom();
                 var {heading, pitch} = this.pano.getPov();
-                var fov = (180/Math.pow(2,zoom));
+                var fov = (180 / Math.pow(2, zoom));
 
-                var r = Raycast.createNew(heading, pitch, normX, normY, fov, width/height);
-                var l = r.get_latlng(position.lat(),position.lng());
+                var r = Raycast.createNew(heading, pitch, normX, normY, fov, width / height);
+                var l = r.get_latlng(position.lat(), position.lng());
 
                 if (l === null) {
                     this.showPinSnackbar = true;
-                }
-                else {
+                } else {
                     this.latestMarker = new this.google.maps.Marker({
                         position: l,
                         map: this.pano,
                         title: 'Annotation'
                     });
+
+                    // var annotation = {
+                    //     location: l,
+                    //
+//                    };
 
                     this.findStep = 1;
                     this.showOverlay = false;
@@ -285,39 +295,36 @@
                 } else {
                     this.showOverlay = true;
                 }
+            },
+            takeSnapshot: function () {
+                this.$nextTick(() => {
+                    this.panoPosition = this.pano.getPosition();
+                    this.zoom = this.pano.getZoom();
+                    this.pov = this.pano.getPov();
+                    this.fov = (180 / Math.pow(2, this.zoom));
 
-                // if (this.showOverlay) {
-                //     this.$nextTick(() => {
-                //         this.panoPosition = this.pano.getPosition();
-                //         this.zoom = this.pano.getZoom();
-                //         this.pov = this.pano.getPov();
-                //         this.fov = (180 / Math.pow(2, this.zoom));
-                //
-                //         var url = "https://maps.googleapis.com/maps/api/streetview?size=640x640" +
-                //             "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() +
-                //             "&fov=" + this.fov +
-                //             "&heading=" + this.pov.heading + "" +
-                //             "&pitch=" + this.pov.pitch +
-                //             "&key=" + process.env.VUE_APP_API_KEY;
-                //
-                //         var image = new Image();
-                //         var that = this;
-                //         image.onload = function() {
-                //             var canvas = that.$refs.canvas;
-                //
-                //             canvas.width = image.width;
-                //             canvas.height = image.height;
-                //             var ctx = canvas.getContext("2d");
-                //             ctx.drawImage(image, 0, 0);
-                //             this.imageUrl = canvas.toDataURL("image/png");
-                //         };
-                //
-                //         // set attributes and src
-                //         image.setAttribute('crossOrigin', 'anonymous'); //
-                //         image.src = url;
-                //
-                //     });
-                // }
+                    var url = "https://maps.googleapis.com/maps/api/streetview?size=640x640" +
+                        "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() +
+                        "&fov=" + this.fov +
+                        "&heading=" + this.pov.heading + "" +
+                        "&pitch=" + this.pov.pitch +
+                        "&key=" + process.env.VUE_APP_API_KEY;
+
+                    var image = new Image();
+                    image.onload = function () {
+                        var canvas = this.$refs.canvas;
+
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        var ctx = canvas.getContext("2d");
+                        ctx.drawImage(image, 0, 0);
+                        this.imageUrl = canvas.toDataURL("image/png");
+                    };
+
+                    // set attributes and src
+                    image.setAttribute('crossOrigin', 'anonymous'); //
+                    image.src = url;
+                });
             }
         }
     };
@@ -419,17 +426,17 @@
         top: 0;
         left: 100vw;
         width: 100vw;
-        background-color: rgba(0,0,0,0.3);
+        background-color: rgba(0, 0, 0, 0);
         height: calc(100vh - 96px) !important;
     }
 
     .overlay-circle {
         position: absolute;
-        margin-left: calc(50vw - 25vh);
+        margin-left: calc(50vw - 25vh - 16px);
         margin-top: calc(50vh - 25vh);
         height: 50vh;
         width: 50vh;
-        border: solid 3px rgb(255,255,255);
+        border: solid 3px rgb(255, 255, 255);
         border-radius: 50%;
         z-index: 997;
     }
@@ -449,7 +456,7 @@
         top: 104px;
         left: 10px;
         /*left: 100vw;*/
-        width: 40%;
+        width: 33%;
         height: 132px;
     }
 </style>
