@@ -1,36 +1,38 @@
 <template>
     <div class="tasks-page" ref="find">
-        <md-tabs md-alignment="fixed" md-sync-route>
-            <template slot="md-tab" slot-scope="{tab}">
+        <div v-if="!done">
+            <md-tabs md-alignment="fixed" md-sync-route>
+                <template slot="md-tab" slot-scope="{tab}">
                 <span class="tab-label">
                     <md-icon class="tab-icon" v-if="tab.data.icon">{{tab.data.icon}}</md-icon> {{tab.label}}
                 </span>
-            </template>
+                </template>
 
-            <md-tab id="tab-map" class="tab-one" md-label="Map" :md-template-data="{icon: 'map'}"
-                    to="/find/tabOne">
-                <GmapMap
-                        Map
-                        :center="position"
-                        :zoom="16"
-                        :options="{
+                <md-tab id="tab-map" class="tab-one" md-label="Map" :md-template-data="{icon: 'map'}"
+                        to="/find/tabOne">
+                    <GmapMap
+                            Map
+                            :center="position"
+                            :zoom="16"
+                            :options="{
                     disableDefaultUI: true,
                     draggable: false,
                     clickableIcons: false,
                     streetViewControl: true
                 }"
-                        map-type-id="terrain"
-                        class="map"
-                        ref="mapRef"
-                >
-                </GmapMap>
-            </md-tab>
-            <md-tab id="tab-two" class="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
-                    to="/find/tabTwo">
-                <div class="overlay-circle" v-if="showOverlay"></div>
-                <div ref="overlay" class='overlay' v-if="showOverlay" @click="annotateFunc"></div>
-                <canvas ref="canvas" class="canvas" v-if="showOverlay"></canvas>
-                <span class="options">
+                            map-type-id="terrain"
+                            class="map"
+                            ref="mapRef"
+                    >
+                    </GmapMap>
+                </md-tab>
+                <md-tab id="tab-two" class="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
+                        to="/find/tabTwo">
+                    <h2 class="annotation-count">Annotations: {{annotations.length}}</h2>
+                    <div class="overlay-circle" v-if="showOverlay"></div>
+                    <div ref="overlay" class='overlay' v-if="showOverlay" @click="annotateFunc"></div>
+                    <canvas ref="canvas" class="canvas"></canvas>
+                    <span class="options">
                     <md-speed-dial class="" md-direction="bottom">
                         <md-speed-dial-target class="annotate-button vote-button">
                             <md-icon class="md-morph-initial">menu_open</md-icon>
@@ -41,7 +43,7 @@
                                 <md-tooltip md-direction="right">Show Help</md-tooltip>
                                 <md-icon>help</md-icon>
                             </md-button>
-                            <md-button class="md-icon-button">
+                            <md-button class="md-icon-button" @click="showSubmit = true" v-if="annotationIndex > 0">
                                 <md-tooltip md-direction="right">Done!</md-tooltip>
                                 <md-icon>done</md-icon>
                             </md-button>
@@ -53,35 +55,56 @@
                         <md-icon>{{pinButtonIcon}}</md-icon>
                     </md-button>
                 </span>
-                <md-button v-if="findStep === 1"
-                           :class="['md-fab', 'md-raised', 'md-primary', 'snapshot-button', 'vote-button']"
-                           @click="takeSnapshot">
-                    <md-tooltip class="big-annotation" md-direction="bottom">Take Snapshot</md-tooltip>
-                    <md-icon>add_a_photo</md-icon>
-                </md-button>
-                <div ref="pano" class="map"></div>
-            </md-tab>
-        </md-tabs>
-        <hr class="tab-divider"/>
+                    <md-button v-if="findStep === 2"
+                               :class="['md-fab', 'md-raised', 'md-primary', 'snapshot-button', 'vote-button']"
+                               @click="takeSnapshot">
+                        <md-tooltip class="big-annotation" md-direction="bottom">Take Snapshot</md-tooltip>
+                        <md-icon>add_a_photo</md-icon>
+                    </md-button>
+                    <div ref="pano" class="map"></div>
+                    <md-card class="instructions" v-if="location">
+                        <md-card-header>
+                            <div class="md-title instruction-title">Instructions</div>
+                        </md-card-header>
+                        <md-card-content>
+                            {{instructions[findStep]}}
+                        </md-card-content>
+                    </md-card>
+                </md-tab>
+            </md-tabs>
+            <hr class="tab-divider"/>
+        </div>
+        <md-empty-state
+                v-if="done"
+                class="verify-empty"
+                md-icon="verified"
+                md-label="All set!"
+                md-description="You have completed your find tasks for now. Thank you!">
+        </md-empty-state>
         <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showSnackbar" md-persistent>
             <span style="width: 100%; text-align: center;">Please stay within the allocated area!</span>
         </md-snackbar>
         <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showPinSnackbar" md-persistent>
             <span style="width: 100%; text-align: center;">The point you clicked is on a too high angle in the panorama. Please move closer and/or click on the ground.</span>
         </md-snackbar>
-        <md-card class="instructions" v-if="showOverlay || findStep === 1">
-            <md-card-header>
-                <div class="md-title instruction-title">Instructions</div>
-            </md-card-header>
-            <md-card-content>
-                {{instructions[findStep]}}
-            </md-card-content>
-        </md-card>
+        <md-dialog :md-active="showSubmit">
+            <md-dialog-title class="dialog-title dialog-title-custom">Submit</md-dialog-title>
+            <md-dialog-content class="dialog-content dialog-content-custom">
+                <md-empty-state
+                        md-icon="check_circle_outline"
+                        :md-description="'You are about to submit ' + (this.annotations.length) + ' new ' + (annotationIndex > 1 ? 'annotations' : 'annotation') + '. This will end your find task. Are you sure?'">
+                    <span class="button-span">
+                        <md-button class="vote-button md-raised" @click="submit()">Confirm</md-button>
+                        <md-button class="omit-button md-raised" @click="showSubmit = false">CANCEL</md-button>
+                    </span>
+                </md-empty-state>
+            </md-dialog-content>
+        </md-dialog>
     </div>
 </template>
 <script>
     import {gmapApi} from "vue2-google-maps";
-    import {mapGetters, mapMutations} from 'vuex'
+    import {mapGetters, mapMutations, mapActions} from 'vuex'
     import Raycast from '../../utils/raycast'
 
     export default {
@@ -99,16 +122,20 @@
                 showSnackbar: false,
                 showPinSnackbar: false,
                 showOverlay: false,
+                showSubmit: false,
                 canvasSource: "",
                 imageUrl: "",
                 instructions: [
+                    "Click the push pin button at the top of the screen to start annotating. Alternatively, show help using the menu button.",
                     "Place a marker by clicking on the image. Clicking inside the circle achieves the highest accuracy.",
-                    "Zoom all the way in, then click the screenshot button at the bottom of the screen."
+                    "Zoom all the way in and pan to the object, then click the screenshot button at the bottom of the screen.",
+                    "Well done, you annotated five objects. Submit your work through the left button at the top of the screen."
                 ],
                 findStep: 0,
-                latestMarker: {},
+                latestMarker: null,
                 annotationIndex: 0,
-                annotations: []
+                annotations: [],
+                done: false
             }
         },
         computed: {
@@ -117,7 +144,7 @@
                 return this.getLocation()
             },
             annotating: function () {
-                return this.showOverlay || this.findStep === 1;
+                return this.findStep > 0 && this.findStep < 3;
             },
             pinButtonClass: function () {
                 return this.annotating ? "omit-button" : "vote-button";
@@ -151,11 +178,12 @@
         },
         methods: {
             ...mapGetters(["getLocation", "getCoordinates", "getPosition"]),
-            ...mapMutations(["setPosition"]),
+            ...mapMutations(["setPosition", "setFindAnnotations"]),
+            ...mapActions(["storeFile"]),
             initMap: function () {
                 var that = this;
                 that.$refs.mapRef.$mapPromise.then((map) => {
-                    that.google.maps.event.addListenerOnce(map, 'idle', function(){
+                    that.google.maps.event.addListenerOnce(map, 'idle', function () {
                         var bounds = map.getBounds();
                         var latBounds = bounds.Ya;
                         var lngBounds = bounds.Ua;
@@ -277,12 +305,18 @@
                         title: 'Annotation'
                     });
 
-                    // var annotation = {
-                    //     location: l,
-                    //
-//                    };
+                    this.annotations[this.annotationIndex] = {
+                        location: l,
+                        position: {},
+                        pov: {},
+                        First: "",
+                        Second: "",
+                        Third: "",
+                        Fourth: "",
+                        Fifth: ""
+                    };
 
-                    this.findStep = 1;
+                    this.findStep = 2;
                     this.showOverlay = false;
                 }
             },
@@ -291,40 +325,57 @@
                     this.showOverlay = false;
                     this.findStep = 0;
 
-                    this.latestMarker.setMap(null);
+                    if (this.latestMarker) {
+                        this.latestMarker.setMap(null);
+                        this.annotations.pop();
+                    }
                 } else {
+                    this.findStep = 1;
                     this.showOverlay = true;
                 }
             },
             takeSnapshot: function () {
-                this.$nextTick(() => {
-                    this.panoPosition = this.pano.getPosition();
-                    this.zoom = this.pano.getZoom();
-                    this.pov = this.pano.getPov();
-                    this.fov = (180 / Math.pow(2, this.zoom));
+                this.panoPosition = this.pano.getPosition();
+                this.zoom = this.pano.getZoom();
+                this.pov = this.pano.getPov();
+                this.fov = (180 / Math.pow(2, this.zoom));
 
-                    var url = "https://maps.googleapis.com/maps/api/streetview?size=640x640" +
-                        "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() +
-                        "&fov=" + this.fov +
-                        "&heading=" + this.pov.heading + "" +
-                        "&pitch=" + this.pov.pitch +
-                        "&key=" + process.env.VUE_APP_API_KEY;
+                var url = "https://maps.googleapis.com/maps/api/streetview?size=640x640" +
+                    "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() +
+                    "&fov=" + this.fov +
+                    "&heading=" + this.pov.heading + "" +
+                    "&pitch=" + this.pov.pitch +
+                    "&key=" + process.env.VUE_APP_API_KEY;
 
-                    var image = new Image();
-                    image.onload = function () {
-                        var canvas = this.$refs.canvas;
+                var that = this;
+                var image = new Image();
+                image.onload = function () {
+                    var canvas = that.$refs.canvas;
 
-                        canvas.width = image.width;
-                        canvas.height = image.height;
-                        var ctx = canvas.getContext("2d");
-                        ctx.drawImage(image, 0, 0);
-                        this.imageUrl = canvas.toDataURL("image/png");
-                    };
+                    canvas.width = 640;
+                    canvas.height = 640;
+                    var ctx = canvas.getContext("2d");
+                    ctx.drawImage(image, 0, 0);
+                    that.imageUrl = canvas.toDataURL("image/png");
 
-                    // set attributes and src
-                    image.setAttribute('crossOrigin', 'anonymous'); //
-                    image.src = url;
-                });
+                    that.annotations[that.annotationIndex]['position']['lat'] = that.panoPosition.lat();
+                    that.annotations[that.annotationIndex]['position']['lng'] = that.panoPosition.lng();
+                    that.annotations[that.annotationIndex]['pov']['heading'] = that.pov.heading;
+                    that.annotations[that.annotationIndex]['pov']['pitch'] = that.pov.pitch;
+                    that.annotations[that.annotationIndex]['First'] = that.imageUrl;
+                    that.annotationIndex++;
+
+                    that.findStep = that.annotationIndex < 5 ? 0 : 3;
+                };
+
+                image.setAttribute('crossOrigin', 'anonymous'); //
+                image.src = url;
+            },
+            submit: function() {
+                this.done = true;
+                this.showSubmit = false;
+                this.setFindAnnotations(this.annotations);
+                this.storeFile(['findAnnotations.json', this.annotations])
             }
         }
     };
@@ -453,10 +504,20 @@
         text-align: center;
         position: absolute;
         z-index: 999;
-        top: 104px;
-        left: 10px;
+        top: 10px;
+        left: calc(100vw + 10px);
         /*left: 100vw;*/
         width: 33%;
-        height: 132px;
+        max-height: 154px !important;
+    }
+
+    .annotation-count {
+        text-align: center;
+        position: absolute;
+        z-index: 997;
+        bottom: -15px;
+        width: 140px;
+        color: white;
+        left: calc(150vw - 70px);
     }
 </style>
