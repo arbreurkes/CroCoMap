@@ -6,24 +6,39 @@
         <md-dialog :md-active="showDialog">
             <md-tabs class="tutorial-tab-container" md-dynamic-height :md-active-tab="activeTab + ''">
                 <md-tab id="0" class="tutorial-tab" md-label="Tutorial" :md-disabled=!tutorialComplete>
-                    <h1>Welcome to CroCoMap!</h1>
-                    <p>Describe the goal of CroCoMap here.</p>
-                    <p>Before you are allowed to contribute, we ask you to complete this tutorial. Don't worry, you only need to this once!</p>
-                    <p>Good luck and stay safe!</p>
+                    <div class="row">
+                        <h1>Welcome to CroCoMap!</h1>
+                        <p>Describe the goal of CroCoMap here.</p>
+                        <p>Before you are allowed to contribute, we ask you to complete this tutorial. Don't worry, you only need to this once!</p>
+                        <p>Good luck and stay safe!</p>
+                    </div>
+
                 </md-tab>
                 <md-tab id="1" class="tutorial-tab" md-label="Find task" :md-disabled=!tutorialComplete>
-                    <p>The find task is as follows:</p>
-                    <p>Describe goal</p>
-                    <img class="tutorial-image" src="https://media1.tenor.com/images/6ffa13b8ce8e8d112a368ef688f6cc99/tenor.gif" alt="Image failed to load."/>
+                    <div class="columnleft">
+                        <p>The find task is as follows:</p>
+                        <p>Describe goal</p>
+                    </div>
+
                     <p>que at voluptates cupiditate. Neque quae culpa suscipit praesentium inventore ducimus ipsa aut.</p>
                 </md-tab>
 
                 <md-tab id="2" class="tutorial-tab" md-label="Fix task" :md-disabled=!tutorialComplete>
-                    <p>Fix Task explanation</p>
-                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ullam mollitia dolorum dolores quae commodi impedit possimus qui, atque at voluptates cupiditate. Neque quae culpa suscipit praesentium inventore ducimus ipsa aut.</p>
+                    <div class="columnleft">
+                        <p>Fix Task explanation</p>
+                        <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ullam mollitia dolorum dolores quae commodi impedit possimus qui, atque at voluptates cupiditate. Neque quae culpa suscipit praesentium inventore ducimus ipsa aut.</p>
+                    </div>
                 </md-tab>
                 <md-tab id="3" class="tutorial-tab" md-label="Verify task" :md-disabled=!tutorialComplete>
-                    <p>Verify Task explanation</p>
+                    <div class="columnleft">
+                        <h3>Verify Task</h3>
+                        <p>In this Verify task, the goal is to find annotated objects that are high-risk and to select the annotation that is most precise and clear in terms of location and snapshot.</p>
+                        <p>You will be presented with the different snapshots proposed by fellow workers and a street view panorama where the context of the objects can be seen. </p>
+                        <p>You need to assesses whether an annotated object is high-risk and either select the best fitting snapshot or mark all object as `No’-Risk’. If you really don’t know, you should select the ‘UNCERTAIN’ button.</p>
+                    </div>
+                    <div class="columnright">
+                        <img class="tutorial-image" src="/images/verifyGif.gif" alt="Image failed to load."/>
+                    </div>
                 </md-tab>
                 <md-tab id="4" class="tutorial-tab" md-label="Done" :md-disabled=!tutorialComplete>
                     <p>Well done! You should be ready to start your first task</p>
@@ -113,6 +128,20 @@
     }
 
     .tutorial-image {
-        height: 50% !important;
+        width: 100% !important;
+        /*height: 80% !important;*/
+    }
+    .columnleft {
+        float: left;
+        width: 30%;
+    }
+    .columnright {
+        float: left;
+        width: 70%;
+    }
+    .row:after {
+        content: "";
+        display: table;
+        clear: both;
     }
 </style>
