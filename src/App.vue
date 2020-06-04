@@ -199,4 +199,20 @@
     .md-dialog-container {
         transform: none !important;
     }
+
+    .vote-button, .unct-button, .omit-button {
+        color: white !important;
+    }
+
+    .vote-button:enabled {
+        background-color: var(--forest-green) !important;
+    }
+
+    .unct-button:enabled {
+        background-color: #a1a1a1 !important;
+    }
+
+    .omit-button:enabled {
+        background-color: #d32f2f !important;
+    }
 </style>

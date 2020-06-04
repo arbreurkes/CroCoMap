@@ -212,7 +212,7 @@
     }
 
     .md-button.md-tab-nav-button {
-        max-width: 100vh !important;
+        max-width: 100vw !important;
     }
 
     .md-button.md-tab-nav-button.md-active {
