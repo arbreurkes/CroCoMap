@@ -197,4 +197,16 @@
     .md-dialog-container {
         transform: none !important;
     }
+
+    .vote-button {
+        background-color: var(--forest-green) !important;
+    }
+
+    .unct-button {
+        background-color: #a1a1a1 !important;
+    }
+
+    .omit-button {
+        background-color: #d32f2f !important;
+    }
 </style>

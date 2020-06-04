@@ -84,4 +84,9 @@
     .actions {
         justify-content: center !important;
     }
+
+    .vote-button {
+        color: white !important;
+        background-color: var(--forest-green) !important;
+    }
 </style>

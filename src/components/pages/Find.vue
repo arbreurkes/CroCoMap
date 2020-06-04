@@ -27,13 +27,12 @@
             </md-tab>
             <md-tab id="tab-two" class="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
                     to="/find/tabTwo">
-                <div ref="overlay" class='overlay overlays' v-if="showOverlay" @click="annotateFunc">
-                    <div class="overlay-circle"></div>
-                </div>
+                <div class="overlay-circle" v-if="showOverlay"></div>
+                <div ref="overlay" class='overlay' v-if="showOverlay" @click="annotateFunc"></div>
                 <canvas ref="canvas" class="canvas" v-if="showOverlay"></canvas>
                 <span class="options">
                     <md-speed-dial class="" md-direction="bottom">
-                        <md-speed-dial-target class="annotate-button">
+                        <md-speed-dial-target class="annotate-button vote-button">
                             <md-icon class="md-morph-initial">menu_open</md-icon>
                             <md-icon class="md-morph-final">sentiment_satisfied_alt</md-icon>
                         </md-speed-dial-target>
@@ -48,11 +47,15 @@
                             </md-button>
                         </md-speed-dial-content>
                     </md-speed-dial>
-                    <md-button class="md-fab md-raised md-primary annotate-button" v-on:click="toggleAnnotation">
-                        <md-tooltip class="big-annotation" md-direction="bottom">Add Annotation</md-tooltip>
-                        <md-icon>push_pin</md-icon>
+                    <md-button :class="['md-fab', 'md-raised', 'md-primary', 'annotate-button', pinButtonClass]" @click="toggleAnnotation">
+                        <md-tooltip class="big-annotation" md-direction="bottom">{{pinButtonTooltip}}</md-tooltip>
+                        <md-icon>{{pinButtonIcon}}</md-icon>
                     </md-button>
                 </span>
+                <md-button v-if="findStep === 1" :class="['md-fab', 'md-raised', 'md-primary', 'snapshot-button', 'vote-button']">
+                    <md-tooltip class="big-annotation" md-direction="bottom">Take Snapshot</md-tooltip>
+                    <md-icon>add_a_photo</md-icon>
+                </md-button>
                 <div ref="pano" class="map"></div>
             </md-tab>
         </md-tabs>
@@ -63,6 +66,14 @@
         <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showPinSnackbar" md-persistent>
             <span style="width: 100%; text-align: center;">The point you clicked is on a too high angle in the panorama. Please move closer and/or click on the ground.</span>
         </md-snackbar>
+        <md-card class="instructions" v-if="showOverlay || findStep === 1">
+            <md-card-header>
+                <div class="md-title instruction-title">Instructions</div>
+            </md-card-header>
+            <md-card-content>
+                {{instructions[findStep]}}
+            </md-card-content>
+        </md-card>
     </div>
 </template>
 <script>
@@ -77,9 +88,6 @@
             return {
                 position: {lat: 0, lng: 0},
                 panoPosition: {},
-                zoom: 1,
-                pov: {},
-                fov: 90,
                 previousPosition: this.position,
                 polygons: [],
                 outerCoords: [{lat: 90, lng: -90}, {lat: 90, lng: 90}, {lat: 90, lng: 180}, {lat: 90, lng: -90},
@@ -89,13 +97,31 @@
                 showPinSnackbar: false,
                 showOverlay: false,
                 canvasSource: "",
-                imageUrl: ""
+                imageUrl: "",
+                instructions: [
+                    "Place a marker by clicking on the image. Clicking inside the circle achieves the highest accuracy.",
+                    "Zoom all the way in, then click the screenshot button at the bottom of the screen."
+                ],
+                findStep: 0,
+                latestMarker: {}
             }
         },
         computed: {
             google: gmapApi,
             location: function () {
                 return this.getLocation()
+            },
+            annotating: function() {
+                return this.showOverlay || this.findStep === 1;
+            },
+            pinButtonClass: function() {
+                return this.annotating ? "omit-button" : "vote-button";
+            },
+            pinButtonIcon: function () {
+                return this.annotating ? "close" : "push_pin";
+            },
+            pinButtonTooltip: function() {
+                return this.annotating ? "Cancel Annotation" : "Add Annotation";
             }
         },
         watch: {
@@ -223,63 +249,75 @@
                 var width = overlay.clientWidth;
                 var height = overlay.clientHeight;
 
-                // normalized x- and y-value based on the overlay div
+                // normalized x- and y-value based on the overlay div 
                 // in (-1, 1) range
                 var normX = 2 * ev.offsetX / width - 1;
                 var normY = 1 - 2 * ev.offsetY / height;
 
-                var {heading, pitch} = this.pov;
-                var r = Raycast.createNew(heading, pitch, normX, normY, this.fov, width/height);
-                var l = r.get_latlng(this.panoPosition.lat(), this.panoPosition.lng());
+                var position = this.pano.getPosition();
+                var zoom = this.pano.getZoom();
+                var {heading, pitch} = this.pano.getPov();
+                var fov = (180/Math.pow(2,zoom));
+
+                var r = Raycast.createNew(heading, pitch, normX, normY, fov, width/height);
+                var l = r.get_latlng(position.lat(),position.lng());
 
                 if (l === null) {
                     this.showPinSnackbar = true;
                 }
                 else {
-                    new this.google.maps.Marker({
+                    this.latestMarker = new this.google.maps.Marker({
                         position: l,
                         map: this.pano,
                         title: 'Annotation'
                     });
 
-                    this.toggleAnnotation();
+                    this.findStep = 1;
+                    this.showOverlay = false;
                 }
             },
             toggleAnnotation: async function () {
-                this.showOverlay = !this.showOverlay;
+                if (this.annotating) {
+                    this.showOverlay = false;
+                    this.findStep = 0;
 
-                if (this.showOverlay) {
-                    this.$nextTick(() => {
-                        this.panoPosition = this.pano.getPosition();
-                        this.zoom = this.pano.getZoom();
-                        this.pov = this.pano.getPov();
-                        this.fov = (180 / Math.pow(2, this.zoom));
-
-                        var url = "https://maps.googleapis.com/maps/api/streetview?size=640x640" +
-                            "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() +
-                            "&fov=" + this.fov +
-                            "&heading=" + this.pov.heading + "" +
-                            "&pitch=" + this.pov.pitch +
-                            "&key=" + process.env.VUE_APP_API_KEY;
-
-                        var image = new Image();
-                        var that = this;
-                        image.onload = function() {
-                            var canvas = that.$refs.canvas;
-
-                            canvas.width = image.width;
-                            canvas.height = image.height;
-                            var ctx = canvas.getContext("2d");
-                            ctx.drawImage(image, 0, 0);
-                            this.imageUrl = canvas.toDataURL("image/png");
-                        };
-
-                        // set attributes and src
-                        image.setAttribute('crossOrigin', 'anonymous'); //
-                        image.src = url;
-
-                    });
+                    this.latestMarker.setMap(null);
+                } else {
+                    this.showOverlay = true;
                 }
+
+                // if (this.showOverlay) {
+                //     this.$nextTick(() => {
+                //         this.panoPosition = this.pano.getPosition();
+                //         this.zoom = this.pano.getZoom();
+                //         this.pov = this.pano.getPov();
+                //         this.fov = (180 / Math.pow(2, this.zoom));
+                //
+                //         var url = "https://maps.googleapis.com/maps/api/streetview?size=640x640" +
+                //             "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() +
+                //             "&fov=" + this.fov +
+                //             "&heading=" + this.pov.heading + "" +
+                //             "&pitch=" + this.pov.pitch +
+                //             "&key=" + process.env.VUE_APP_API_KEY;
+                //
+                //         var image = new Image();
+                //         var that = this;
+                //         image.onload = function() {
+                //             var canvas = that.$refs.canvas;
+                //
+                //             canvas.width = image.width;
+                //             canvas.height = image.height;
+                //             var ctx = canvas.getContext("2d");
+                //             ctx.drawImage(image, 0, 0);
+                //             this.imageUrl = canvas.toDataURL("image/png");
+                //         };
+                //
+                //         // set attributes and src
+                //         image.setAttribute('crossOrigin', 'anonymous'); //
+                //         image.src = url;
+                //
+                //     });
+                // }
             }
         }
     };
@@ -354,19 +392,16 @@
     .annotate-button {
         margin-right: 0;
         margin-top: 0;
-        background: var(--forest-green) !important;
+    }
+
+    .snapshot-button {
+        position: absolute;
+        bottom: 10px;
+        left: calc(150vw - 28px)
     }
 
     .big-annotation {
         margin-top: 8px;
-    }
-
-    .overlays {
-        position: absolute;
-        top: 0;
-        left: 100vw;
-        width: 100vw;
-        height: calc(100vh - 96px) !important;
     }
 
     .canvas {
@@ -379,20 +414,42 @@
     }
 
     .overlay {
-        z-index: 999;
+        z-index: 998;
+        position: absolute;
+        top: 0;
+        left: 100vw;
+        width: 100vw;
         background-color: rgba(0,0,0,0.3);
+        height: calc(100vh - 96px) !important;
     }
 
     .overlay-circle {
+        position: absolute;
         margin-left: calc(50vw - 25vh);
         margin-top: calc(50vh - 25vh);
         height: 50vh;
         width: 50vh;
         border: solid 3px rgb(255,255,255);
         border-radius: 50%;
+        z-index: 997;
     }
 
     .tab-one, .tab-two {
         padding: 16px !important;
+    }
+
+    .instruction-title {
+        margin-top: 0 !important;
+    }
+
+    .instructions {
+        text-align: center;
+        position: absolute;
+        z-index: 999;
+        top: 104px;
+        left: 10px;
+        /*left: 100vw;*/
+        width: 40%;
+        height: 132px;
     }
 </style>
