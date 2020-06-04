@@ -27,7 +27,21 @@
             </md-tab>
             <md-tab id="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
                     to="/find/tabTwo">
-                <div ref="overlay" class='overlay' v-if="showOverlay" @click="annotateFunc"></div>
+                <div ref="overlay" class='overlay' v-if="showOverlay" @click="annotateFunc">
+                    <md-card class="instructions">
+                    <md-card-header>
+                        <div class="md-title">Instructions</div>
+                    </md-card-header>
+
+                    <md-card-content>
+                        Place a pin by clicking a point on the ground in the panorama. 
+                        Best results are achieved when close to the object and clicking within the white circle.
+                    </md-card-content>
+                    </md-card>
+
+
+                </div>
+                <div class="overlay-circle" v-if="showOverlay"></div>
                 <span class="options">
                     <md-speed-dial class="" md-direction="top">
                         <md-speed-dial-target class="annotate-button">
@@ -57,6 +71,9 @@
         <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showSnackbar" md-persistent>
             <span style="width: 100%; text-align: center;">Please stay within the allocated area!</span>
         </md-snackbar>
+        <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showPinSnackbar" md-persistent>
+            <span style="width: 100%; text-align: center;">The point you clicked is on a too high angle in the panorama. Please move closer and/or click on the ground.</span>
+        </md-snackbar>
     </div>
 </template>
 <script>
@@ -77,6 +94,7 @@
                     {lat: -90, lng: -90}, {lat: -90, lng: 180}, {lat: -90, lng: 90}, {lat: -90, lng: -90}],
                 innerCoords: [],
                 showSnackbar: false,
+                showPinSnackbar: false,
                 showOverlay: false
             }
         },
@@ -213,12 +231,10 @@
                 var width = overlay.clientWidth;
                 var height = overlay.clientHeight;
 
-                // x- and y-value from the top left corner of the overlay div 
-                // (same size and position as street view div)
-                var y = ev.offsetY;
-                var x = ev.offsetX;
-                var normX = x / width;
-                var normY = 1 - y / height; // set y to increase from the bottom left corner
+                // normalized x- and y-value based on the overlay div 
+                // in (-1, 1) range
+                var normX = 2 * ev.offsetX / width - 1;
+                var normY = 1 - 2 * ev.offsetY / height;
 
                 var position = this.pano.getPosition();
                 var zoom = this.pano.getZoom();
@@ -226,14 +242,19 @@
                 var fov = (180/Math.pow(2,zoom));
 
                 var r = Raycast.createNew(heading, pitch, normX, normY, fov, width/height);
-                // This doesn't return the right location :(
                 var l = r.get_latlng(position.lat(),position.lng());
 
-                new this.google.maps.Marker({
-                    position: l,
-                    map: this.pano,
-                    title: 'Annotation'
-                });
+                if (l === null) {
+                    this.showPinSnackbar = true;
+                }
+                else {
+                    new this.google.maps.Marker({
+                        position: l,
+                        map: this.pano,
+                        title: 'Annotation'
+                    });
+                }
+                
                 this.showOverlay = !this.showOverlay;
             },
             toggleAnnotation: function () {
@@ -325,14 +346,24 @@
         z-index: 999;
         width: 100vw;
         height: calc(100vh - 96px);
-        background-color: rgba(0,0,0,0.4);
+        background-color: rgba(0,0,0,0.3);
     }
 
-    .dot {
-        height: 25px;
-        width: 25px;
-        background-color: #f55;
+    .overlay-circle {
+        position: absolute;
+        top: 25vh;
+        left: 137vw;
+        height: 50vh;
+        width: 50vh;
+        border: solid 3px rgb(255,255,255);
         border-radius: 50%;
+        z-index: 998;
+    }
+
+    .md-card {
+        width: 320px;
+        margin: 0px;
         display: inline-block;
+        vertical-align: top;
     }
 </style>

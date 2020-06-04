@@ -31,7 +31,7 @@ var Raycast = {
         raycast.get_latlng = function(current_lat, current_lng)
         {
             var heading = ((360 - raycast.get_raycast().heading) + 90)%360;
-            var distance = raycast.get_distance(2);
+            var distance = raycast.get_distance(2.5);
             if (distance == null || distance > 30) return null;
             var x = distance * Math.cos(heading/180.0*Math.PI);
             var y = distance * Math.sin(heading/180.0*Math.PI);
