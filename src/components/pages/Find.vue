@@ -43,24 +43,24 @@
                 </div>
                 <div class="overlay-circle" v-if="showOverlay"></div>
                 <span class="options">
-                    <md-speed-dial class="" md-direction="top">
+                    <md-speed-dial class="" md-direction="bottom">
                         <md-speed-dial-target class="annotate-button">
                             <md-icon class="md-morph-initial">menu_open</md-icon>
                             <md-icon class="md-morph-final">sentiment_satisfied_alt</md-icon>
                         </md-speed-dial-target>
                         <md-speed-dial-content class="">
                             <md-button class="md-icon-button">
-                                <md-tooltip md-direction="right">Done!</md-tooltip>
-                                <md-icon>done</md-icon>
-                            </md-button>
-                            <md-button class="md-icon-button">
                                 <md-tooltip md-direction="right">Show Help</md-tooltip>
                                 <md-icon>help</md-icon>
+                            </md-button>
+                            <md-button class="md-icon-button">
+                                <md-tooltip md-direction="right">Done!</md-tooltip>
+                                <md-icon>done</md-icon>
                             </md-button>
                         </md-speed-dial-content>
                     </md-speed-dial>
                     <md-button class="md-fab md-raised md-primary annotate-button" v-on:click="toggleAnnotation">
-                        <md-tooltip class="big-annotation" md-direction="right">Add Annotation</md-tooltip>
+                        <md-tooltip class="big-annotation" md-direction="bottom">Add Annotation</md-tooltip>
                         <md-icon>push_pin</md-icon>
                     </md-button>
                 </span>
@@ -324,18 +324,18 @@
         justify-content: center;
         position: absolute;
         left: calc(150vw - 60px);
-        bottom: 10px;
+        top: 10px;
         z-index: 999;
     }
 
     .annotate-button {
         margin-right: 0;
-        margin-top: 104px;
+        margin-top: 0;
         background: var(--forest-green) !important;
     }
 
     .big-annotation {
-        margin-left: 8px;
+        margin-top: 8px;
     }
 
     .overlay {
