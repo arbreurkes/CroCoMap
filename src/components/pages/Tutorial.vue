@@ -17,11 +17,15 @@
                 </md-tab>
                 <md-tab id="1" class="tutorial-tab" md-label="Find task" :md-disabled=!tutorialComplete>
                     <div class="columnleft">
-                        <p>The find task is as follows:</p>
-                        <p>Describe goal</p>
+                        <p>The goal of the Find task is to find and annotate high-risk objects.</p>
+                        <p>You are able to navigating through a bounded area in Google Street View. </p>
+                        <p>Once you located a high-risk object, you are expected to annotate the object by clicking on it. </p>
+                        <p>A pin is placed and you will be able to take a snapshot of by zooming in on the object as much as needed for it to fill de screen. Click on the camera icon on the bottom to take the snapshot.</p>
+                        <p>If you accidentally misclicked, you are able to remove your pin by clicking the red X on the top of your screen.</p>
                     </div>
-
-                    <p>que at voluptates cupiditate. Neque quae culpa suscipit praesentium inventore ducimus ipsa aut.</p>
+                    <div class="columnright">
+                        <img class="tutorial-image" src="/images/findTask.gif" alt="Image failed to load."/>
+                    </div>
                 </md-tab>
 
                 <md-tab id="2" class="tutorial-tab" md-label="Fix task" :md-disabled=!tutorialComplete>
