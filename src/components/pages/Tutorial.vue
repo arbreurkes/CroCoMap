@@ -11,6 +11,7 @@
                         <p>Describe the goal of CroCoMap here.</p>
                         <p>Before you are allowed to contribute, we ask you to complete this tutorial. Don't worry, you only need to this once!</p>
                         <p>Good luck and stay safe!</p>
+                        <p>The CroCoMap Team</p>
                     </div>
 
                 </md-tab>
@@ -133,11 +134,11 @@
     }
     .columnleft {
         float: left;
-        width: 30%;
+        width: 40%;
     }
     .columnright {
         float: left;
-        width: 70%;
+        width: 60%;
     }
     .row:after {
         content: "";
