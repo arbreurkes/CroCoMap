@@ -2,7 +2,7 @@
     <div class="verify-page">
         <div v-if="!done">
             <div class="md-layout md-gutter">
-                <streetview-card :position="this.snapShots[voteIndex]['location']" :pov="this.snapShots[voteIndex]['pov']" :inGrid="true" size="md-size-33"></streetview-card>
+                <streetview-card :position="this.snapShots[voteIndex]['position']" :pov="this.snapShots[voteIndex]['pov']" :inGrid="true" size="md-size-33"></streetview-card>
                 <verify-card title="First" :image="this.snapShots[voteIndex]['First']" :index="voteIndex" :inGrid="true"
                              size="md-size-33"></verify-card>
                 <verify-card title="Second" :image="this.snapShots[voteIndex]['Second']" :index="voteIndex" :inGrid="true"
@@ -119,7 +119,7 @@
         }
     };
 </script>
-<style>
+<style scoped>
     .verify-page {
         width: 100%;
         padding: 16px;
@@ -133,15 +133,6 @@
 
     .md-layout {
         margin-bottom: 16px;
-    }
-
-    .dialog-title-custom {
-        text-align: center;
-        margin-bottom: 0;
-    }
-
-    .dialog-content-custom {
-        padding-bottom: 0;
     }
 
     .vote-snackbar {
@@ -158,24 +149,22 @@
         /*margin-right: 4px !important;*/
     }
 
-    .button-span .vote-button, .button-span .unct-button, .button-span .omit-button {
-        margin-left: 4px !important;
-        margin-right: 4px !important;
-    }
-
     .vote-button, .unct-button, .omit-button {
         color: white !important;
     }
-
-    .vote-button {
-        background-color: var(--forest-green) !important;
+</style>
+<style>
+    .dialog-title-custom {
+        text-align: center;
+        margin-bottom: 0;
     }
 
-    .unct-button {
-        background-color: #a1a1a1 !important;
+    .dialog-content-custom {
+        padding-bottom: 0;
     }
 
-    .omit-button {
-        background-color: #d32f2f !important;
+    .button-span .vote-button, .button-span .unct-button, .button-span .omit-button {
+        margin-left: 4px !important;
+        margin-right: 4px !important;
     }
 </style>

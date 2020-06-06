@@ -16,6 +16,7 @@ export default new Vuex.Store({
             "New York": {lat: 40.7128, lng: -74.0060},
             "Melbourne": {lat: -37.8136, lng: 144.9631}
         },
+        findAnnotations: [],
         verifySnapshots: [],
         verifyVotes: [],
         lastSavedValue: null
@@ -24,14 +25,15 @@ export default new Vuex.Store({
         getLocation: (state) => state.location,
         getPosition: (state) => state.position,
         getCoordinates: (state) => state.locations[state.location],
+        getFindAnnotations: (state) => state.findAnnotations,
         getVerifySnapshots: (state) => state.verifySnapshots,
         getVerifyVotes: (state) => state.verifyVotes
     },
     mutations: {
         setLocation: (state, location) => (state.location = location),
         setPosition: (state, position) => (state.position = position),
+        setFindAnnotations: (state, list) => (state.findAnnotations = list),
         setVerifySnapshots: (state, object) => (state.verifySnapshots = object),
-        pushVerifySnapshot: (state, value) => (state.verifySnapshots.push(value)),
         setVerifyVotes: (state, value) => (state.verifyVotes.push(value)),
         setLastSavedValue: (state, value) => (state.lastSavedValue = value)
     },
