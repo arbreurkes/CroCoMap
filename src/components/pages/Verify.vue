@@ -2,18 +2,18 @@
     <div class="verify-page">
         <div v-if="!done">
             <div class="md-layout md-gutter">
-                <streetview-card :position="this.snapShots[voteIndex]['position']" :pov="this.snapShots[voteIndex]['pov']" :inGrid="true" size="md-size-33"></streetview-card>
-                <verify-card title="First" :image="this.snapShots[voteIndex]['First']" :index="voteIndex" :inGrid="true"
+                <streetview-card :position="this.snapshots[voteIndex]['position']" :pov="this.snapshots[voteIndex]['pov']" :inGrid="true" size="md-size-33"></streetview-card>
+                <verify-card title="First" :image="this.snapshots[voteIndex]['First']" :index="voteIndex" :inGrid="true"
                              size="md-size-33"></verify-card>
-                <verify-card title="Second" :image="this.snapShots[voteIndex]['Second']" :index="voteIndex" :inGrid="true"
+                <verify-card title="Second" :image="this.snapshots[voteIndex]['Second']" :index="voteIndex" :inGrid="true"
                              size="md-size-33"></verify-card>
             </div>
             <div class="md-layout md-gutter">
-                <verify-card title="Third" :image="this.snapShots[voteIndex]['Third']" :index="voteIndex" :inGrid="true"
+                <verify-card title="Third" :image="this.snapshots[voteIndex]['Third']" :index="voteIndex" :inGrid="true"
                              size="md-size-33"></verify-card>
-                <verify-card title="Fourth" :image="this.snapShots[voteIndex]['Fourth']" :index="voteIndex" :inGrid="true"
+                <verify-card title="Fourth" :image="this.snapshots[voteIndex]['Fourth']" :index="voteIndex" :inGrid="true"
                              size="md-size-33"></verify-card>
-                <verify-card title="Fifth" :image="this.snapShots[voteIndex]['Fifth']" :index="voteIndex" :inGrid="true"
+                <verify-card title="Fifth" :image="this.snapshots[voteIndex]['Fifth']" :index="voteIndex" :inGrid="true"
                              size="md-size-33"></verify-card>
             </div>
         </div>
@@ -60,7 +60,7 @@
 </template>
 <script>
     import VerifyCard from "../elements/VerifyCard";
-    import {mapActions, mapGetters} from 'vuex'
+    import {mapActions, mapGetters, mapMutations} from 'vuex'
     import StreetviewCard from "../elements/StreetviewCard";
 
     export default {
@@ -78,7 +78,7 @@
             }
         },
         computed: {
-            snapShots: function () {
+            snapshots: function () {
                 return this.getVerifySnapshots();
             },
             votes: function () {
@@ -86,18 +86,18 @@
             }
         },
         watch: {
-            snapShots: function () {
-                this.done = this.snapShots.length === 0;
+            snapshots: function () {
+                this.done = this.snapshots.length === 0;
             },
             votes: {
                 immediate: true,
                 handler: function () {
-                    if (this.snapShots.length === 0) {
+                    if (this.snapshots.length === 0) {
                         this.done = true;
-                    } else if (this.snapShots.length > this.voteIndex + 1) {
+                    } else if (this.snapshots.length > this.votes.length) {
                         this.voteIndex++;
                     } else {
-                        this.done = true;
+                        this.submit();
                     }
                 }
             }
@@ -106,15 +106,34 @@
             this.loadVerifySnapshots();
         },
         methods: {
-            ...mapActions(['updateVerifyVotes', 'loadVerifySnapshots']),
+            ...mapMutations(['setResults']),
+            ...mapActions(['updateVerifyVotes', 'loadVerifySnapshots', 'storeFile']),
             ...mapGetters(['getVerifySnapshots', 'getVerifyVotes']),
             uncertain: function () {
-                this.updateVerifyVotes("?");
+                this.updateVerifyVotes("0");
                 this.uncertainPrompt = false;
             },
             omit: function () {
-                this.updateVerifyVotes(null);
+                this.updateVerifyVotes("-1");
                 this.omitPrompt = false;
+            },
+            submit: function() {
+                this.done = true;
+
+                var results = [];
+                for (var i = 0; i < this.snapshots.length; i++) {
+                    var snapshot = this.snapshots[i];
+                    var result = {
+                        position: snapshot.position,
+                        location: snapshot.location,
+                        pov: snapshot.pov,
+                        truth: this.votes[i]
+                    };
+
+                    results.push(result);
+                }
+
+                this.storeFile(['results.json', results])
             }
         }
     };

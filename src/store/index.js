@@ -20,6 +20,7 @@ export default new Vuex.Store({
         fixSnapshots: [{position: {lat: 0, lng:0}}],
         verifySnapshots: [],
         verifyVotes: [],
+        results: [],
         lastSavedValue: null
     },
     getters: {
@@ -29,6 +30,7 @@ export default new Vuex.Store({
         getFindAnnotations: (state) => state.findAnnotations,
         getFixSnapshots: (state) => state.fixSnapshots,
         getVerifySnapshots: (state) => state.verifySnapshots,
+        getResults: (state) => state.results,
         getVerifyVotes: (state) => state.verifyVotes
     },
     mutations: {
@@ -38,6 +40,7 @@ export default new Vuex.Store({
         setFixSnapshots: (state, list) => (state.fixSnapshots = list),
         setVerifySnapshots: (state, object) => (state.verifySnapshots = object),
         setVerifyVotes: (state, value) => (state.verifyVotes.push(value)),
+        setResults: (state, value) => (state.results = value),
         setLastSavedValue: (state, value) => (state.lastSavedValue = value)
     },
     actions: {
