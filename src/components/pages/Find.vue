@@ -73,6 +73,17 @@
                 </md-tab>
             </md-tabs>
             <hr class="tab-divider"/>
+            <md-dialog class="submit-dialog" :md-active="showSnapshot" v-if="showSnapshot">
+                <md-dialog-content class="dialog-content dialog-content-custom">
+                    <img class="fix-img" :src="existingSnapshots[snapshotIndex].First" alt="Image failed to load."/>
+                </md-dialog-content>
+                <md-dialog-actions class="actions">
+                    <md-button class="md-icon-button unct-button md-raised" @click="showSnapshot = false">
+                        <md-tooltip md-direction="bottom" style="z-index: 1001;">Close</md-tooltip>
+                        <md-icon>close</md-icon>
+                    </md-button>
+                </md-dialog-actions>
+            </md-dialog>
         </div>
         <md-empty-state
                 v-if="done"
@@ -135,6 +146,8 @@
                 latestMarker: null,
                 annotationIndex: 0,
                 annotations: [],
+                snapshotIndex: 0,
+                showSnapshot: false,
                 done: false
             }
         },
@@ -142,6 +155,9 @@
             google: gmapApi,
             location: function () {
                 return this.getLocation()
+            },
+            existingSnapshots: function() {
+                return this.getExistingSnapshots()
             },
             annotating: function () {
                 return this.findStep > 0 && this.findStep < 3;
@@ -161,12 +177,16 @@
                 immediate: true,
                 handler: function () {
                     if (this.location !== null) {
+                        this.loadExistingSnapshots();
                         this.position = this.getCoordinates();
                         this.$nextTick(() => {
                             this.initMap();
                         });
                     }
                 }
+            },
+            existingSnapshots: function() {
+                this.addExistingMarkers();
             }
         },
         mounted: function () {
@@ -177,9 +197,9 @@
             });
         },
         methods: {
-            ...mapGetters(["getLocation", "getCoordinates", "getPosition"]),
+            ...mapGetters(["getLocation", "getCoordinates", "getPosition", "getExistingSnapshots"]),
             ...mapMutations(["setPosition", "setFindAnnotations"]),
-            ...mapActions(["storeFile"]),
+            ...mapActions(["storeFile", "loadExistingSnapshots"]),
             initMap: function () {
                 var that = this;
                 that.$refs.mapRef.$mapPromise.then((map) => {
@@ -275,6 +295,27 @@
                         });
                     });
                 });
+            },
+            addExistingMarkers: function() {
+                var that = this;
+                for (var i = 0; i < that.existingSnapshots.length; i++) {
+                    var snapshot = that.existingSnapshots[i];
+
+                    var marker = new that.google.maps.Marker({
+                        index: i,
+                        position: snapshot.location,
+                        map: that.pano,
+                        title: 'Annotation'
+                    });
+
+                    marker.addListener('click', function () {
+                        that.showMarkerContent(this.index);
+                    });
+                }
+            },
+            showMarkerContent: function(index) {
+                this.snapshotIndex = index;
+                this.showSnapshot = true;
             },
             annotateFunc: function (ev) {
                 var overlay = this.$refs.overlay;
