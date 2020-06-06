@@ -87,12 +87,12 @@
         <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showPinSnackbar" md-persistent>
             <span style="width: 100%; text-align: center;">The point you clicked is on a too high angle in the panorama. Please move closer and/or click on the ground.</span>
         </md-snackbar>
-        <md-dialog :md-active="showSubmit">
+        <md-dialog class="submit-dialog" :md-active="showSubmit">
             <md-dialog-title class="dialog-title dialog-title-custom">Submit</md-dialog-title>
             <md-dialog-content class="dialog-content dialog-content-custom">
                 <md-empty-state
                         md-icon="check_circle_outline"
-                        :md-description="'You are about to submit ' + (this.annotations.length) + ' new ' + (annotationIndex > 1 ? 'annotations' : 'annotation') + '. This will end your find task. Are you sure?'">
+                        :md-description="'You are about to submit ' + (this.annotations.length) + ' new ' + (annotationIndex === 1 ? 'annotation' : 'annotations') + '. This will end your find task. Are you sure?'">
                     <span class="button-span">
                         <md-button class="vote-button md-raised" @click="submit()">Confirm</md-button>
                         <md-button class="omit-button md-raised" @click="showSubmit = false">CANCEL</md-button>
@@ -104,7 +104,7 @@
 </template>
 <script>
     import {gmapApi} from "vue2-google-maps";
-    import {mapGetters, mapMutations, mapActions} from 'vuex'
+    import {mapActions, mapGetters, mapMutations} from 'vuex'
     import Raycast from '../../utils/raycast'
 
     export default {
@@ -340,7 +340,7 @@
                 this.pov = this.pano.getPov();
                 this.fov = (180 / Math.pow(2, this.zoom));
 
-                var url = "https://maps.googleapis.com/maps/api/streetview?size=640x640" +
+                var url = "https://maps.googleapis.com/maps/api/streetview?size=320x320" +
                     "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() +
                     "&fov=" + this.fov +
                     "&heading=" + this.pov.heading + "" +
@@ -352,8 +352,8 @@
                 image.onload = function () {
                     var canvas = that.$refs.canvas;
 
-                    canvas.width = 640;
-                    canvas.height = 640;
+                    canvas.width = 320;
+                    canvas.height = 320;
                     var ctx = canvas.getContext("2d");
                     ctx.drawImage(image, 0, 0);
                     that.imageUrl = canvas.toDataURL("image/png");
@@ -371,7 +371,7 @@
                 image.setAttribute('crossOrigin', 'anonymous'); //
                 image.src = url;
             },
-            submit: function() {
+            submit: function () {
                 this.done = true;
                 this.showSubmit = false;
                 this.setFindAnnotations(this.annotations);
@@ -466,8 +466,8 @@
         position: absolute;
         top: 0;
         left: 0;
-        width: 640px;
-        height: 640px;
+        width: 320px;
+        height: 320px;
         z-index: -1;
     }
 
@@ -503,21 +503,28 @@
     .instructions {
         text-align: center;
         position: absolute;
-        z-index: 999;
-        top: 10px;
-        left: calc(100vw + 10px);
-        /*left: 100vw;*/
+        /*z-index: 20;*/
         width: 33%;
-        max-height: 154px !important;
+    }
+
+    .submit-dialog {
+        z-index: 1000 !important;
     }
 
     .annotation-count {
         text-align: center;
         position: absolute;
-        z-index: 997;
+        z-index: 20;
         bottom: -15px;
         width: 140px;
         color: white;
         left: calc(150vw - 70px);
+    }
+</style>
+<style scoped>
+    .instructions {
+        top: 10px;
+        left: calc(100vw + 10px);
+        max-height: 154px !important;
     }
 </style>

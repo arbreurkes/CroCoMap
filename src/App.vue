@@ -20,9 +20,6 @@
             </md-toolbar>
 
             <md-list>
-                <md-list-item @click="showNavigation = false" to="/" exact>
-                    Home
-                </md-list-item>
                 <md-list-item @click="showNavigation = false" to="/find/">
                     Find
                 </md-list-item>
@@ -139,6 +136,7 @@
     }
 
     .md-drawer {
+        z-index: 1000 !important;
         top: 48px !important;
         width: 200px !important;
         height: calc(100vh - 48px) !important;
