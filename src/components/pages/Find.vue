@@ -92,7 +92,7 @@
             <md-dialog-content class="dialog-content dialog-content-custom">
                 <md-empty-state
                         md-icon="check_circle_outline"
-                        :md-description="'You are about to submit ' + (this.annotations.length) + ' new ' + (annotationIndex > 1 ? 'annotations' : 'annotation') + '. This will end your find task. Are you sure?'">
+                        :md-description="'You are about to submit ' + (this.annotations.length) + ' new ' + (annotationIndex === 1 ? 'annotation' : 'annotations') + '. This will end your find task. Are you sure?'">
                     <span class="button-span">
                         <md-button class="vote-button md-raised" @click="submit()">Confirm</md-button>
                         <md-button class="omit-button md-raised" @click="showSubmit = false">CANCEL</md-button>
@@ -466,8 +466,8 @@
         position: absolute;
         top: 0;
         left: 0;
-        width: 640px;
-        height: 640px;
+        width: 320px;
+        height: 320px;
         z-index: -1;
     }
 
