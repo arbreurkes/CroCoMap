@@ -17,6 +17,7 @@ export default new Vuex.Store({
             "Melbourne": {lat: -37.8136, lng: 144.9631}
         },
         findAnnotations: [],
+        fixSnapshots: [{position: {lat: 0, lng:0}}],
         verifySnapshots: [],
         verifyVotes: [],
         lastSavedValue: null
@@ -26,6 +27,7 @@ export default new Vuex.Store({
         getPosition: (state) => state.position,
         getCoordinates: (state) => state.locations[state.location],
         getFindAnnotations: (state) => state.findAnnotations,
+        getFixSnapshots: (state) => state.fixSnapshots,
         getVerifySnapshots: (state) => state.verifySnapshots,
         getVerifyVotes: (state) => state.verifyVotes
     },
@@ -33,6 +35,7 @@ export default new Vuex.Store({
         setLocation: (state, location) => (state.location = location),
         setPosition: (state, position) => (state.position = position),
         setFindAnnotations: (state, list) => (state.findAnnotations = list),
+        setFixSnapshots: (state, list) => (state.fixSnapshots = list),
         setVerifySnapshots: (state, object) => (state.verifySnapshots = object),
         setVerifyVotes: (state, value) => (state.verifyVotes.push(value)),
         setLastSavedValue: (state, value) => (state.lastSavedValue = value)
@@ -44,6 +47,11 @@ export default new Vuex.Store({
         async loadVerifySnapshots({commit}) {
             axios.get('/resources/verifySnapshots.json').then(response => {
                 commit('setVerifySnapshots', response.data)
+            });
+        },
+        async loadFixSnapshots({commit}) {
+            axios.get('/resources/fixSnapshots.json').then(response => {
+                commit('setFixSnapshots', response.data)
             });
         },
         async storeFile({commit}, value) { // value[] -> [0] = fileName, [1] = value

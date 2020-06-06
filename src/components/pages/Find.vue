@@ -340,7 +340,7 @@
                 this.pov = this.pano.getPov();
                 this.fov = (180 / Math.pow(2, this.zoom));
 
-                var url = "https://maps.googleapis.com/maps/api/streetview?size=640x640" +
+                var url = "https://maps.googleapis.com/maps/api/streetview?size=320x320" +
                     "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() +
                     "&fov=" + this.fov +
                     "&heading=" + this.pov.heading + "" +
@@ -352,8 +352,8 @@
                 image.onload = function () {
                     var canvas = that.$refs.canvas;
 
-                    canvas.width = 640;
-                    canvas.height = 640;
+                    canvas.width = 320;
+                    canvas.height = 320;
                     var ctx = canvas.getContext("2d");
                     ctx.drawImage(image, 0, 0);
                     that.imageUrl = canvas.toDataURL("image/png");
