@@ -22,7 +22,8 @@ export default new Vuex.Store({
         verifySnapshots: [],
         verifyVotes: [],
         results: [],
-        lastSavedValue: null
+        lastSavedValue: null,
+        snackbarMessage: ""
     },
     getters: {
         getLocation: (state) => state.location,
@@ -33,7 +34,8 @@ export default new Vuex.Store({
         getFixSnapshots: (state) => state.fixSnapshots,
         getVerifySnapshots: (state) => state.verifySnapshots,
         getResults: (state) => state.results,
-        getVerifyVotes: (state) => state.verifyVotes
+        getVerifyVotes: (state) => state.verifyVotes,
+        getSnackbarMessage: (state) => state.snackbarMessage,
     },
     mutations: {
         setLocation: (state, location) => (state.location = location),
@@ -44,7 +46,8 @@ export default new Vuex.Store({
         setVerifySnapshots: (state, object) => (state.verifySnapshots = object),
         setVerifyVotes: (state, value) => (state.verifyVotes.push(value)),
         setResults: (state, value) => (state.results = value),
-        setLastSavedValue: (state, value) => (state.lastSavedValue = value)
+        setLastSavedValue: (state, value) => (state.lastSavedValue = value),
+        setSnackbarMessage: (state, value) => (state.snackbarMessage = value)
     },
     actions: {
         updateVerifyVotes({commit}, keyValue) {
