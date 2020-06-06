@@ -87,7 +87,7 @@
         <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showPinSnackbar" md-persistent>
             <span style="width: 100%; text-align: center;">The point you clicked is on a too high angle in the panorama. Please move closer and/or click on the ground.</span>
         </md-snackbar>
-        <md-dialog :md-active="showSubmit">
+        <md-dialog class="submit-dialog" :md-active="showSubmit">
             <md-dialog-title class="dialog-title dialog-title-custom">Submit</md-dialog-title>
             <md-dialog-content class="dialog-content dialog-content-custom">
                 <md-empty-state
@@ -104,7 +104,7 @@
 </template>
 <script>
     import {gmapApi} from "vue2-google-maps";
-    import {mapGetters, mapMutations, mapActions} from 'vuex'
+    import {mapActions, mapGetters, mapMutations} from 'vuex'
     import Raycast from '../../utils/raycast'
 
     export default {
@@ -371,7 +371,7 @@
                 image.setAttribute('crossOrigin', 'anonymous'); //
                 image.src = url;
             },
-            submit: function() {
+            submit: function () {
                 this.done = true;
                 this.showSubmit = false;
                 this.setFindAnnotations(this.annotations);
@@ -503,21 +503,28 @@
     .instructions {
         text-align: center;
         position: absolute;
-        z-index: 999;
-        top: 10px;
-        left: calc(100vw + 10px);
-        /*left: 100vw;*/
+        /*z-index: 20;*/
         width: 33%;
-        max-height: 154px !important;
+    }
+
+    .submit-dialog {
+        z-index: 1000 !important;
     }
 
     .annotation-count {
         text-align: center;
         position: absolute;
-        z-index: 997;
+        z-index: 20;
         bottom: -15px;
         width: 140px;
         color: white;
         left: calc(150vw - 70px);
+    }
+</style>
+<style scoped>
+    .instructions {
+        top: 10px;
+        left: calc(100vw + 10px);
+        max-height: 154px !important;
     }
 </style>
