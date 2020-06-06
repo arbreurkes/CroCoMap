@@ -4,7 +4,7 @@
             <md-button class="md-icon-button" @click="showNavigation = !showNavigation">
                 <md-icon>menu</md-icon>
             </md-button>
-            <span class="md-title">CroCoMap</span>
+            <span class="md-title">CroCoMap - {{this.$route.name}}</span>
             <md-avatar class="md-avatar-icon">
                 <md-icon>person</md-icon>
             </md-avatar>
