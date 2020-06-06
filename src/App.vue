@@ -4,7 +4,7 @@
             <md-button class="md-icon-button" @click="showNavigation = !showNavigation">
                 <md-icon>menu</md-icon>
             </md-button>
-            <span class="md-title">CroCoMap</span>
+            <span class="md-title">CroCoMap - {{this.$route.name}}</span>
             <md-avatar class="md-avatar-icon">
                 <md-icon>person</md-icon>
             </md-avatar>
@@ -48,8 +48,10 @@
                         <md-button class="md-primary md-raised confirm-button" @click="confirmLocation" :disabled="!location">confirm</md-button>
                     </md-dialog-actions>
                 </md-dialog-content>
-             
             </md-dialog>
+            <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showSnackbar" md-persistent>
+                <span style="width: 100%; text-align: center;">{{snackbarMessage}}</span>
+            </md-snackbar>
         </md-content>
     </div>
 </template>
@@ -60,19 +62,37 @@
     export default {
         name: 'app',
         components: {},
+        computed: {
+            snackbarMessage: function() {
+                return this.getSnackbarMessage();
+            }
+        },
+        watch: {
+            snackbarMessage: function() {
+                if (this.snackbarMessage !== "") {
+                    this.showSnackbar = true;
+                }
+            },
+            showSnackbar: function() {
+                if (!this.showSnackbar) {
+                    this.setSnackbarMessage("");
+                }
+            }
+        },
         data: () => ({
             showNavigation: false,
             showSidepanel: false,
             locationPrompt: true,
             location: null,
-            locations: ["Delft", "New York", "Beijing", "Melbourne"].sort()
+            locations: ["Delft", "New York", "Beijing", "Melbourne"].sort(),
+            showSnackbar: false
         }),
         mounted() {
             this.location = this.getLocation();
         },
         methods: {
-            ...mapGetters(['getLocation']),
-            ...mapMutations(['setLocation']),
+            ...mapGetters(['getLocation', 'getSnackbarMessage']),
+            ...mapMutations(['setLocation', 'setSnackbarMessage']),
             confirmLocation: function() {
                 this.setLocation(this.location);
                 this.locationPrompt = false;

@@ -92,12 +92,6 @@
                 md-label="All set!"
                 md-description="You have completed your find tasks for now. Thank you!">
         </md-empty-state>
-        <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showSnackbar" md-persistent>
-            <span style="width: 100%; text-align: center;">Please stay within the allocated area!</span>
-        </md-snackbar>
-        <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showPinSnackbar" md-persistent>
-            <span style="width: 100%; text-align: center;">The point you clicked is on a too high angle in the panorama. Please move closer and/or click on the ground.</span>
-        </md-snackbar>
         <md-dialog class="submit-dialog" :md-active="showSubmit">
             <md-dialog-title class="dialog-title dialog-title-custom">Submit</md-dialog-title>
             <md-dialog-content class="dialog-content dialog-content-custom">
@@ -130,8 +124,6 @@
                 outerCoords: [{lat: 90, lng: -90}, {lat: 90, lng: 90}, {lat: 90, lng: 180}, {lat: 90, lng: -90},
                     {lat: -90, lng: -90}, {lat: -90, lng: 180}, {lat: -90, lng: 90}, {lat: -90, lng: -90}],
                 innerCoords: [],
-                showSnackbar: false,
-                showPinSnackbar: false,
                 showOverlay: false,
                 showSubmit: false,
                 canvasSource: "",
@@ -198,7 +190,7 @@
         },
         methods: {
             ...mapGetters(["getLocation", "getCoordinates", "getPosition", "getExistingSnapshots"]),
-            ...mapMutations(["setPosition", "setFindAnnotations"]),
+            ...mapMutations(["setPosition", "setFindAnnotations", 'setSnackbarMessage']),
             ...mapActions(["storeFile", "loadExistingSnapshots"]),
             initMap: function () {
                 var that = this;
@@ -291,7 +283,7 @@
                                 }
 
                                 if (!isInBounds) {
-                                    that.showSnackbar = true;
+                                    that.setSnackbarMessage("Please stay within the allocated area!");
                                     pano.setPosition(that.previousPosition);
                                 } else {
                                     that.previousPosition = pos;
@@ -343,7 +335,7 @@
                 var l = r.get_latlng(position.lat(), position.lng());
 
                 if (l === null) {
-                    this.showPinSnackbar = true;
+                    this.setSnackbarMessage("The point you clicked is on a too high angle in the panorama. Please move closer and/or click on the ground.");
                 } else {
                     this.latestMarker = new this.google.maps.Marker({
                         position: l,
