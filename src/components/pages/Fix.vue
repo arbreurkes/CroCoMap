@@ -45,9 +45,11 @@
                 </md-dialog-content>
                 <md-dialog-actions class="actions">
                     <md-button class="md-icon-button vote-button md-raised" @click="acceptSnapshot">
+                        <md-tooltip md-direction="left" style="z-index: 1001;">Accept</md-tooltip>
                         <md-icon>check</md-icon>
                     </md-button>
                     <md-button class="md-icon-button omit-button md-raised" @click="retakeSnapshot">
+                        <md-tooltip md-direction="right" style="z-index: 1001;">Retake</md-tooltip>
                         <md-icon>edit</md-icon>
                     </md-button>
                 </md-dialog-actions>

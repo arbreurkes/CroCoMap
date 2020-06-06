@@ -73,6 +73,17 @@
                 </md-tab>
             </md-tabs>
             <hr class="tab-divider"/>
+            <md-dialog class="submit-dialog" :md-active="showSnapshot" v-if="showSnapshot">
+                <md-dialog-content class="dialog-content dialog-content-custom">
+                    <img class="fix-img" :src="existingSnapshots[snapshotIndex].First" alt="Image failed to load."/>
+                </md-dialog-content>
+                <md-dialog-actions class="actions">
+                    <md-button class="md-icon-button unct-button md-raised" @click="showSnapshot = false">
+                        <md-tooltip md-direction="bottom" style="z-index: 1001;">Close</md-tooltip>
+                        <md-icon>close</md-icon>
+                    </md-button>
+                </md-dialog-actions>
+            </md-dialog>
         </div>
         <md-empty-state
                 v-if="done"
@@ -135,6 +146,8 @@
                 latestMarker: null,
                 annotationIndex: 0,
                 annotations: [],
+                snapshotIndex: 0,
+                showSnapshot: false,
                 done: false
             }
         },
@@ -142,6 +155,9 @@
             google: gmapApi,
             location: function () {
                 return this.getLocation()
+            },
+            existingSnapshots: function() {
+                return this.getExistingSnapshots()
             },
             annotating: function () {
                 return this.findStep > 0 && this.findStep < 3;
@@ -161,12 +177,16 @@
                 immediate: true,
                 handler: function () {
                     if (this.location !== null) {
+                        this.loadExistingSnapshots();
                         this.position = this.getCoordinates();
                         this.$nextTick(() => {
                             this.initMap();
                         });
                     }
                 }
+            },
+            existingSnapshots: function() {
+                this.addExistingMarkers();
             }
         },
         mounted: function () {
@@ -177,9 +197,9 @@
             });
         },
         methods: {
-            ...mapGetters(["getLocation", "getCoordinates", "getPosition"]),
+            ...mapGetters(["getLocation", "getCoordinates", "getPosition", "getExistingSnapshots"]),
             ...mapMutations(["setPosition", "setFindAnnotations"]),
-            ...mapActions(["storeFile"]),
+            ...mapActions(["storeFile", "loadExistingSnapshots"]),
             initMap: function () {
                 var that = this;
                 that.$refs.mapRef.$mapPromise.then((map) => {
@@ -190,47 +210,52 @@
                         var latDiff = Math.abs(latBounds.i - latBounds.j);
                         var lngDiff = Math.abs(lngBounds.i - lngBounds.j);
 
-                        var quadrants = [{lat: latBounds.i, lng: lngBounds.i},
-                            {lat: latBounds.i + latDiff / 2, lng: lngBounds.i},
-                            {lat: latBounds.i, lng: lngBounds.i + lngDiff / 2},
-                            {lat: latBounds.i + latDiff / 2, lng: lngBounds.i + lngDiff / 2}];
-                        for (var i = 0; i < 2; i++) {
-                            for (var j = i; j < i + 2; j++) {
-                                if (i + j < 1 || Math.random() + Math.random() >= 1) {
-                                    var boxLatDiff = latDiff / 10;
-                                    var boxLngDiff = lngDiff / 10;
+                        var fractions = 144;
+                        var steps = Math.sqrt(fractions);
+                        var boxLatDiff = latDiff / steps;
+                        var boxLngDiff = lngDiff / steps;
 
-                                    var latRatio = Math.random();
-                                    var lngRatio = Math.random();
-                                    var startLat = Math.min(quadrants[i + j].lat + ((latDiff / 2) * latRatio),
-                                        quadrants[i + j].lat + (latDiff / 2) - boxLatDiff);
-                                    var startLng = Math.min(quadrants[i + j].lng + ((lngDiff / 2) * lngRatio),
-                                        quadrants[i + j].lng + (lngDiff / 2) - boxLngDiff);
-
-                                    that.innerCoords[that.innerCoords.length] = [{lat: startLat, lng: startLng},
-                                        {lat: startLat + boxLatDiff, lng: startLng},
-                                        {lat: startLat + boxLatDiff, lng: startLng + boxLngDiff},
-                                        {lat: startLat, lng: startLng + boxLngDiff},
-                                        {lat: startLat, lng: startLng}];
-
-                                    that.polygons[that.polygons.length] = new that.google.maps.Polygon({
-                                        paths: that.innerCoords[that.innerCoords.length - 1],
-                                        strokeColor: '#0000FF',
-                                        strokeOpacity: 0.3,
-                                        strokeWeight: 1,
-                                        map: map,
-                                        fillOpacity: 0.0
-                                    });
-
-                                    if (i + j === 0) {
-                                        that.panoPosition = {
-                                            lat: startLat + (boxLatDiff / 2),
-                                            lng: startLng + (boxLngDiff / 2)
-                                        }
-                                    }
-                                }
+                        var rectangles = [];
+                        for (var i = 0; i < steps; i++) {
+                            for (var j = 0; j < steps; j++) {
+                                rectangles.push({lat: latBounds.i + boxLatDiff * i, lng: lngBounds.i + boxLngDiff * j})
                             }
                         }
+
+                        var assignedAreas = [];
+                        while(assignedAreas.length < 5) {
+                            var random = Math.floor(Math.random() * fractions);
+                            if (!assignedAreas.includes(random)) assignedAreas.push(random);
+                        }
+
+                        var positioned = false;
+                        assignedAreas.forEach(i => {
+                            var startLat = rectangles[i].lat;
+                            var startLng = rectangles[i].lng;
+
+                            that.innerCoords[that.innerCoords.length] = [{lat: startLat, lng: startLng},
+                                {lat: startLat + boxLatDiff, lng: startLng},
+                                {lat: startLat + boxLatDiff, lng: startLng + boxLngDiff},
+                                {lat: startLat, lng: startLng + boxLngDiff},
+                                {lat: startLat, lng: startLng}];
+
+                            that.polygons[that.polygons.length] = new that.google.maps.Polygon({
+                                paths: that.innerCoords[that.innerCoords.length - 1],
+                                strokeColor: '#0000FF',
+                                strokeOpacity: 0.3,
+                                strokeWeight: 1,
+                                map: map,
+                                fillOpacity: 0.0
+                            });
+
+                            if (!positioned) {
+                                that.panoPosition = {
+                                    lat: startLat + (boxLatDiff / 2),
+                                    lng: startLng + (boxLngDiff / 2)
+                                };
+                                positioned = true;
+                            }
+                        });
 
                         var paths = [that.outerCoords];
                         that.innerCoords.forEach((o) => {
@@ -275,6 +300,27 @@
                         });
                     });
                 });
+            },
+            addExistingMarkers: function() {
+                var that = this;
+                for (var i = 0; i < that.existingSnapshots.length; i++) {
+                    var snapshot = that.existingSnapshots[i];
+
+                    var marker = new that.google.maps.Marker({
+                        index: i,
+                        position: snapshot.location,
+                        map: that.pano,
+                        title: 'Annotation'
+                    });
+
+                    marker.addListener('click', function () {
+                        that.showMarkerContent(this.index);
+                    });
+                }
+            },
+            showMarkerContent: function(index) {
+                this.snapshotIndex = index;
+                this.showSnapshot = true;
             },
             annotateFunc: function (ev) {
                 var overlay = this.$refs.overlay;
