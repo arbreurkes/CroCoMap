@@ -8,7 +8,7 @@
                 <md-tab id="0" class="tutorial-tab" md-label="Tutorial" :md-disabled=!tutorialComplete>
                     <div class="row">
                         <h1>Welcome to CroCoMap!</h1>
-                        <p>Describe the goal of CroCoMap here.</p>
+<!--                        <p>Describe the goal of CroCoMap here.</p>-->
                         <p>Before you are allowed to contribute, we ask you to complete this tutorial. Don't worry, you only need to this once!</p>
                         <p>Good luck and stay safe!</p>
                         <p>The CroCoMap Team</p>
@@ -17,6 +17,7 @@
                 </md-tab>
                 <md-tab id="1" class="tutorial-tab" md-label="Find task" :md-disabled=!tutorialComplete>
                     <div class="columnleft">
+                        <h3>Find Task</h3>
                         <p>The goal of the Find task is to find and annotate high-risk objects.</p>
                         <p>You are able to navigating through a bounded area in Google Street View. </p>
                         <p>Once you located a high-risk object, you are expected to annotate the object by clicking on it. </p>
@@ -30,8 +31,13 @@
 
                 <md-tab id="2" class="tutorial-tab" md-label="Fix task" :md-disabled=!tutorialComplete>
                     <div class="columnleft">
-                        <p>Fix Task explanation</p>
-                        <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ullam mollitia dolorum dolores quae commodi impedit possimus qui, atque at voluptates cupiditate. Neque quae culpa suscipit praesentium inventore ducimus ipsa aut.</p>
+                        <h3>Fix Task</h3>
+                        <p>In the Fix Task, you are given an already annotated area and are asked to fix the annotations if needed. </p>
+                        <p>Fixing an annotation can be done in multiple ways. First, to minimize errors in the exact location of the annotated object, you are allowed to move the ground marker of an object.</p>
+                        <p>Second, if the provided snapshot is not clear, you are able to take a new one!</p>
+                    </div>
+                    <div class="columnright">
+                        <img class="tutorial-image" src="/images/fixTask.gif" alt="Image failed to load."/>
                     </div>
                 </md-tab>
                 <md-tab id="3" class="tutorial-tab" md-label="Verify task" :md-disabled=!tutorialComplete>
@@ -46,7 +52,7 @@
                     </div>
                 </md-tab>
                 <md-tab id="4" class="tutorial-tab" md-label="Done" :md-disabled=!tutorialComplete>
-                    <p>Well done! You should be ready to start your first task</p>
+                    <h3>Well done! You should be ready to start your first task!</h3>
                    </md-tab>
             </md-tabs>
             <hr class="tab-underline"/>
