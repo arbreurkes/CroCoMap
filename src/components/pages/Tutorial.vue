@@ -13,9 +13,9 @@
                 <div class="columnleft">
                     <h3>Find Task</h3>
                     <p>The goal of the Find task is to find and annotate high-risk objects.</p>
-                    <p>You are able to navigating through a bounded area in Google Street View. </p>
+                    <p>You are able to navigate through a bounded area in Google Street View. </p>
                     <p>Once you located a high-risk object, you are expected to annotate the object by clicking on it. </p>
-                    <p>A pin is placed and you will be able to take a snapshot of by zooming in on the object as much as needed for it to fill de screen. Click on the camera icon on the bottom to take the snapshot.</p>
+                    <p>A pin is placed and you will be able to take a snapshot of the object by zooming in as much as needed for it to fill the screen. Click on the camera icon on the bottom to take the snapshot.</p>
                     <p>If you accidentally misclicked, you are able to remove your pin by clicking the red X on the top of your screen.</p>
                 </div>
                 <div class="columnright">
@@ -38,7 +38,7 @@
                     <h3>Verify Task</h3>
                     <p>In this Verify task, the goal is to find annotated objects that are high-risk and to select the annotation that is most precise and clear in terms of location and snapshot.</p>
                     <p>You will be presented with the different snapshots proposed by fellow workers and a street view panorama where the context of the objects can be seen. </p>
-                    <p>You need to assesses whether an annotated object is high-risk and either select the best fitting snapshot or mark all object as `No’-Risk’. If you really don’t know, you should select the ‘UNCERTAIN’ button.</p>
+                    <p>You need to assesses whether an annotated object is high-risk and either select the best fitting snapshot or mark all object as `No Risk’. If you really don’t know, you should select the ‘UNCERTAIN’ button.</p>
                 </div>
                 <div class="columnright">
                     <img class="tutorial-image" src="/images/verifyGif.gif" alt="Image failed to load."/>
