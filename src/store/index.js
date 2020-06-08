@@ -23,10 +23,13 @@ export default new Vuex.Store({
         verifyVotes: [],
         results: [],
         lastSavedValue: null,
-        snackbarMessage: ""
+        snackbarMessage: "",
+        showTutorial: true,
+        tutorialComplete: false
     },
     getters: {
         getLocation: (state) => state.location,
+        getLocations: (state) => Object.keys(state.locations).sort(),
         getPosition: (state) => state.position,
         getCoordinates: (state) => state.locations[state.location],
         getExistingSnapshots: (state) => state.existingSnapshots,
@@ -36,6 +39,8 @@ export default new Vuex.Store({
         getResults: (state) => state.results,
         getVerifyVotes: (state) => state.verifyVotes,
         getSnackbarMessage: (state) => state.snackbarMessage,
+        getShowTutorial: (state) => state.showTutorial,
+        getTutorialComplete: (state) => state.tutorialComplete
     },
     mutations: {
         setLocation: (state, location) => (state.location = location),
@@ -47,7 +52,9 @@ export default new Vuex.Store({
         setVerifyVotes: (state, value) => (state.verifyVotes.push(value)),
         setResults: (state, value) => (state.results = value),
         setLastSavedValue: (state, value) => (state.lastSavedValue = value),
-        setSnackbarMessage: (state, value) => (state.snackbarMessage = value)
+        setSnackbarMessage: (state, value) => (state.snackbarMessage = value),
+        setShowTutorial: (state, value) => (state.showTutorial = value),
+        setTutorialComplete: (state, value) => (state.tutorialComplete = value)
     },
     actions: {
         updateVerifyVotes({commit}, keyValue) {
