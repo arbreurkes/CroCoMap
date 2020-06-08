@@ -16,32 +16,56 @@ export default new Vuex.Store({
             "New York": {lat: 40.7128, lng: -74.0060},
             "Melbourne": {lat: -37.8136, lng: 144.9631}
         },
+        existingSnapshots: [],
+        findAnnotations: [],
+        fixSnapshots: [{position: {lat: 0, lng:0}}],
         verifySnapshots: [],
         verifyVotes: [],
-        lastSavedValue: null
+        results: [],
+        lastSavedValue: null,
+        snackbarMessage: ""
     },
     getters: {
         getLocation: (state) => state.location,
         getPosition: (state) => state.position,
         getCoordinates: (state) => state.locations[state.location],
+        getExistingSnapshots: (state) => state.existingSnapshots,
+        getFindAnnotations: (state) => state.findAnnotations,
+        getFixSnapshots: (state) => state.fixSnapshots,
         getVerifySnapshots: (state) => state.verifySnapshots,
-        getVerifyVotes: (state) => state.verifyVotes
+        getResults: (state) => state.results,
+        getVerifyVotes: (state) => state.verifyVotes,
+        getSnackbarMessage: (state) => state.snackbarMessage,
     },
     mutations: {
         setLocation: (state, location) => (state.location = location),
         setPosition: (state, position) => (state.position = position),
+        setExistingSnapshots: (state, value) => (state.existingSnapshots = value),
+        setFindAnnotations: (state, list) => (state.findAnnotations = list),
+        setFixSnapshots: (state, list) => (state.fixSnapshots = list),
         setVerifySnapshots: (state, object) => (state.verifySnapshots = object),
-        pushVerifySnapshot: (state, value) => (state.verifySnapshots.push(value)),
         setVerifyVotes: (state, value) => (state.verifyVotes.push(value)),
-        setLastSavedValue: (state, value) => (state.lastSavedValue = value)
+        setResults: (state, value) => (state.results = value),
+        setLastSavedValue: (state, value) => (state.lastSavedValue = value),
+        setSnackbarMessage: (state, value) => (state.snackbarMessage = value)
     },
     actions: {
         updateVerifyVotes({commit}, keyValue) {
             commit('setVerifyVotes', keyValue);
         },
+        async loadExistingSnapshots({commit}) {
+            axios.get('/resources/findAnnotations.json').then(response => {
+                commit('setExistingSnapshots', response.data)
+            });
+        },
         async loadVerifySnapshots({commit}) {
             axios.get('/resources/verifySnapshots.json').then(response => {
                 commit('setVerifySnapshots', response.data)
+            });
+        },
+        async loadFixSnapshots({commit}) {
+            axios.get('/resources/fixSnapshots.json').then(response => {
+                commit('setFixSnapshots', response.data)
             });
         },
         async storeFile({commit}, value) { // value[] -> [0] = fileName, [1] = value

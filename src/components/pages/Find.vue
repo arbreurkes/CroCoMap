@@ -1,44 +1,116 @@
 <template>
-    <div class="tasks-page">
-        <md-tabs md-alignment="fixed" md-sync-route>
-            <template slot="md-tab" slot-scope="{tab}">
+    <div class="tasks-page" ref="find">
+        <div v-if="!done">
+            <md-tabs md-alignment="fixed" md-sync-route>
+                <template slot="md-tab" slot-scope="{tab}">
                 <span class="tab-label">
                     <md-icon class="tab-icon" v-if="tab.data.icon">{{tab.data.icon}}</md-icon> {{tab.label}}
                 </span>
-            </template>
+                </template>
 
-            <md-tab id="tab-map" class="tab-one" md-label="Map" :md-template-data="{icon: 'map'}"
-                    to="/find/tabOne">
-                <GmapMap
-                        Map
-                        :center="position"
-                        :zoom="16"
-                        :options="{
+                <md-tab id="tab-map" class="tab-one" md-label="Map" :md-template-data="{icon: 'map'}"
+                        to="/find/tabOne">
+                    <GmapMap
+                            Map
+                            :center="position"
+                            :zoom="16"
+                            :options="{
                     disableDefaultUI: true,
                     draggable: false,
                     clickableIcons: false,
                     streetViewControl: true
                 }"
-                        map-type-id="terrain"
-                        class="map"
-                        ref="mapRef"
-                >
-                </GmapMap>
-            </md-tab>
-            <md-tab id="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
-                    to="/find/tabTwo">
-                <div ref="pano" class="map"></div>
-            </md-tab>
-        </md-tabs>
-        <hr class="tab-divider"/>
-        <md-snackbar md-position="center" :md-duration="4000" :md-active.sync="showSnackbar" md-persistent>
-            <span style="width: 100%; text-align: center;">Please stay within the allocated area!</span>
-        </md-snackbar>
+                            map-type-id="terrain"
+                            class="map"
+                            ref="mapRef"
+                    >
+                    </GmapMap>
+                </md-tab>
+                <md-tab id="tab-two" class="tab-two" md-label="Street View" :md-template-data="{icon: 'streetview'}"
+                        to="/find/tabTwo">
+                    <h2 class="annotation-count">Annotations: {{annotations.length}}</h2>
+                    <div class="overlay-circle" v-if="showOverlay"></div>
+                    <div ref="overlay" class='overlay' v-if="showOverlay" @click="annotateFunc"></div>
+                    <canvas ref="canvas" class="canvas"></canvas>
+                    <span class="options">
+                    <md-speed-dial class="" md-direction="bottom">
+                        <md-speed-dial-target class="annotate-button vote-button">
+                            <md-icon class="md-morph-initial">menu_open</md-icon>
+                            <md-icon class="md-morph-final">sentiment_satisfied_alt</md-icon>
+                        </md-speed-dial-target>
+                        <md-speed-dial-content class="">
+                            <md-button class="md-icon-button">
+                                <md-tooltip md-direction="right">Show Help</md-tooltip>
+                                <md-icon>help</md-icon>
+                            </md-button>
+                            <md-button class="md-icon-button" @click="showSubmit = true" v-if="annotationIndex > 0">
+                                <md-tooltip md-direction="right">Done!</md-tooltip>
+                                <md-icon>done</md-icon>
+                            </md-button>
+                        </md-speed-dial-content>
+                    </md-speed-dial>
+                    <md-button :class="['md-fab', 'md-raised', 'md-primary', 'annotate-button', pinButtonClass]"
+                               @click="toggleAnnotation">
+                        <md-tooltip class="big-annotation" md-direction="bottom">{{pinButtonTooltip}}</md-tooltip>
+                        <md-icon>{{pinButtonIcon}}</md-icon>
+                    </md-button>
+                </span>
+                    <md-button v-if="findStep === 2"
+                               :class="['md-fab', 'md-raised', 'md-primary', 'snapshot-button', 'vote-button']"
+                               @click="takeSnapshot">
+                        <md-tooltip class="big-annotation" md-direction="bottom">Take Snapshot</md-tooltip>
+                        <md-icon>add_a_photo</md-icon>
+                    </md-button>
+                    <div ref="pano" class="map"></div>
+                    <md-card class="instructions" v-if="location">
+                        <md-card-header>
+                            <div class="md-title instruction-title">Instructions</div>
+                        </md-card-header>
+                        <md-card-content>
+                            {{instructions[findStep]}}
+                        </md-card-content>
+                    </md-card>
+                </md-tab>
+            </md-tabs>
+            <hr class="tab-divider"/>
+            <md-dialog class="submit-dialog" :md-active="showSnapshot" v-if="showSnapshot">
+                <md-dialog-content class="dialog-content dialog-content-custom">
+                    <img class="fix-img" :src="existingSnapshots[snapshotIndex].First" alt="Image failed to load."/>
+                </md-dialog-content>
+                <md-dialog-actions class="actions">
+                    <md-button class="md-icon-button unct-button md-raised" @click="showSnapshot = false">
+                        <md-tooltip md-direction="bottom" style="z-index: 1001;">Close</md-tooltip>
+                        <md-icon>close</md-icon>
+                    </md-button>
+                </md-dialog-actions>
+            </md-dialog>
+        </div>
+        <md-empty-state
+                v-if="done"
+                class="verify-empty"
+                md-icon="verified"
+                md-label="All set!"
+                md-description="You have completed your find tasks for now. Thank you!">
+        </md-empty-state>
+        <md-dialog class="submit-dialog" :md-active="showSubmit">
+            <md-dialog-title class="dialog-title dialog-title-custom">Submit</md-dialog-title>
+            <md-dialog-content class="dialog-content dialog-content-custom">
+                <md-empty-state
+                        md-icon="check_circle_outline"
+                        :md-description="'You are about to submit ' + (this.annotations.length) + ' new ' + (annotationIndex === 1 ? 'annotation' : 'annotations') + '. This will end your find task. Are you sure?'">
+                    <span class="button-span">
+                        <md-button class="vote-button md-raised" @click="submit()">Confirm</md-button>
+                        <md-button class="omit-button md-raised" @click="showSubmit = false">CANCEL</md-button>
+                    </span>
+                </md-empty-state>
+            </md-dialog-content>
+        </md-dialog>
     </div>
 </template>
 <script>
     import {gmapApi} from "vue2-google-maps";
-    import {mapGetters, mapMutations} from 'vuex'
+    import {mapActions, mapGetters, mapMutations} from 'vuex'
+    import Raycast from '../../utils/raycast'
 
     export default {
         name: 'Find',
@@ -52,26 +124,61 @@
                 outerCoords: [{lat: 90, lng: -90}, {lat: 90, lng: 90}, {lat: 90, lng: 180}, {lat: 90, lng: -90},
                     {lat: -90, lng: -90}, {lat: -90, lng: 180}, {lat: -90, lng: 90}, {lat: -90, lng: -90}],
                 innerCoords: [],
-                showSnackbar: false
+                showOverlay: false,
+                showSubmit: false,
+                canvasSource: "",
+                imageUrl: "",
+                instructions: [
+                    "Click the push pin button at the top of the screen to start annotating. Alternatively, show help using the menu button.",
+                    "Place a marker by clicking on the image. Clicking inside the circle achieves the highest accuracy.",
+                    "Zoom all the way in and pan to the object, then click the screenshot button at the bottom of the screen.",
+                    "Well done, you annotated five objects. Submit your work through the left button at the top of the screen."
+                ],
+                findStep: 0,
+                latestMarker: null,
+                annotationIndex: 0,
+                annotations: [],
+                snapshotIndex: 0,
+                showSnapshot: false,
+                done: false
             }
         },
         computed: {
             google: gmapApi,
             location: function () {
                 return this.getLocation()
+            },
+            existingSnapshots: function() {
+                return this.getExistingSnapshots()
+            },
+            annotating: function () {
+                return this.findStep > 0 && this.findStep < 3;
+            },
+            pinButtonClass: function () {
+                return this.annotating ? "omit-button" : "vote-button";
+            },
+            pinButtonIcon: function () {
+                return this.annotating ? "close" : "push_pin";
+            },
+            pinButtonTooltip: function () {
+                return this.annotating ? "Cancel Annotation" : "Add Annotation";
             }
         },
         watch: {
             location: {
                 immediate: true,
-                handler: function() {
+                handler: function () {
                     if (this.location !== null) {
+                        this.loadExistingSnapshots();
                         this.position = this.getCoordinates();
                         this.$nextTick(() => {
                             this.initMap();
                         });
                     }
                 }
+            },
+            existingSnapshots: function() {
+                this.addExistingMarkers();
             }
         },
         mounted: function () {
@@ -82,96 +189,231 @@
             });
         },
         methods: {
-            ...mapGetters(["getLocation", "getCoordinates", "getPosition"]),
-            ...mapMutations(["setPosition"]),
+            ...mapGetters(["getLocation", "getCoordinates", "getPosition", "getExistingSnapshots"]),
+            ...mapMutations(["setPosition", "setFindAnnotations", 'setSnackbarMessage']),
+            ...mapActions(["storeFile", "loadExistingSnapshots"]),
             initMap: function () {
-                this.$refs.mapRef.$mapPromise.then((map) => {
-                    var bounds = map.getBounds();
-                    var latBounds = bounds.Ya;
-                    var lngBounds = bounds.Ua;
-                    var latDiff = Math.abs(latBounds.i - latBounds.j);
-                    var lngDiff = Math.abs(lngBounds.i - lngBounds.j);
+                var that = this;
+                that.$refs.mapRef.$mapPromise.then((map) => {
+                    that.google.maps.event.addListenerOnce(map, 'idle', function () {
+                        var bounds = map.getBounds();
+                        var latBounds = bounds.Ya;
+                        var lngBounds = bounds.Ua;
+                        var latDiff = Math.abs(latBounds.i - latBounds.j);
+                        var lngDiff = Math.abs(lngBounds.i - lngBounds.j);
 
-                    var quadrants = [{lat: latBounds.i, lng: lngBounds.i},
-                        {lat: latBounds.i + latDiff / 2, lng: lngBounds.i},
-                        {lat: latBounds.i, lng: lngBounds.i + lngDiff / 2},
-                        {lat: latBounds.i + latDiff / 2, lng: lngBounds.i + lngDiff / 2}];
-                    for (var i = 0; i < 2; i++) {
-                        for (var j = i; j < i + 2; j++) {
-                            if (i + j < 1 || Math.random() + Math.random() >= 1) {
-                                var boxLatDiff = latDiff / 10;
-                                var boxLngDiff = lngDiff / 10;
+                        var fractions = 144;
+                        var steps = Math.sqrt(fractions);
+                        var boxLatDiff = latDiff / steps;
+                        var boxLngDiff = lngDiff / steps;
 
-                                var latRatio = Math.random();
-                                var lngRatio = Math.random();
-                                var startLat = Math.min(quadrants[i + j].lat + ((latDiff / 2) * latRatio),
-                                    quadrants[i + j].lat + (latDiff / 2) - boxLatDiff);
-                                var startLng = Math.min(quadrants[i + j].lng + ((lngDiff / 2) * lngRatio),
-                                    quadrants[i + j].lng + (lngDiff / 2) - boxLngDiff);
-
-                                this.innerCoords[this.innerCoords.length] = [{lat: startLat, lng: startLng},
-                                    {lat: startLat + boxLatDiff, lng: startLng},
-                                    {lat: startLat + boxLatDiff, lng: startLng + boxLngDiff},
-                                    {lat: startLat, lng: startLng + boxLngDiff},
-                                    {lat: startLat, lng: startLng}];
-
-                                this.polygons[this.polygons.length] = new this.google.maps.Polygon({
-                                    paths: this.innerCoords[this.innerCoords.length - 1],
-                                    strokeColor: '#0000FF',
-                                    strokeOpacity: 0.3,
-                                    strokeWeight: 1,
-                                    map: map,
-                                    fillOpacity: 0.0
-                                });
-
-                                if (i + j === 0) {
-                                    this.panoPosition = {lat: startLat + (boxLatDiff / 2),
-                                        lng: startLng + (boxLngDiff / 2)}
-                                }
+                        var rectangles = [];
+                        for (var i = 0; i < steps; i++) {
+                            for (var j = 0; j < steps; j++) {
+                                rectangles.push({lat: latBounds.i + boxLatDiff * i, lng: lngBounds.i + boxLngDiff * j})
                             }
                         }
-                    }
 
-                    var paths = [this.outerCoords];
-                    this.innerCoords.forEach((o) => {
-                        paths.push(o.reverse())
-                    });
+                        var assignedAreas = [];
+                        while(assignedAreas.length < 5) {
+                            var random = Math.floor(Math.random() * fractions);
+                            if (!assignedAreas.includes(random)) assignedAreas.push(random);
+                        }
 
-                    new this.google.maps.Polygon({
-                        paths: paths,
-                        strokeWeight: 0,
-                        map: map,
-                        fillColor: '#FF0000',
-                        fillOpacity: 0.35
-                    });
+                        var positioned = false;
+                        assignedAreas.forEach(i => {
+                            var startLat = rectangles[i].lat;
+                            var startLng = rectangles[i].lng;
 
-                    var pano = new this.google.maps.StreetViewPanorama(this.$refs.pano, {
-                        position: this.panoPosition,
-                        source: this.google.maps.StreetViewSource.OUTDOOR
-                    });
-                    map.setStreetView(pano);
+                            that.innerCoords[that.innerCoords.length] = [{lat: startLat, lng: startLng},
+                                {lat: startLat + boxLatDiff, lng: startLng},
+                                {lat: startLat + boxLatDiff, lng: startLng + boxLngDiff},
+                                {lat: startLat, lng: startLng + boxLngDiff},
+                                {lat: startLat, lng: startLng}];
 
-                    pano.addListener('position_changed', () => {
-                        var pos = pano.getPosition();
+                            that.polygons[that.polygons.length] = new that.google.maps.Polygon({
+                                paths: that.innerCoords[that.innerCoords.length - 1],
+                                strokeColor: '#0000FF',
+                                strokeOpacity: 0.3,
+                                strokeWeight: 1,
+                                map: map,
+                                fillOpacity: 0.0
+                            });
 
-                        if (pos !== this.previousPosition) {
-                            var isInBounds = false;
-                            for (var i = 0; i < this.polygons.length; i++) {
-                                if (this.google.maps.geometry.poly.containsLocation(pos, this.polygons[i])) {
-                                    isInBounds = true;
-                                    break;
+                            if (!positioned) {
+                                that.panoPosition = {
+                                    lat: startLat + (boxLatDiff / 2),
+                                    lng: startLng + (boxLngDiff / 2)
+                                };
+                                positioned = true;
+                            }
+                        });
+
+                        var paths = [that.outerCoords];
+                        that.innerCoords.forEach((o) => {
+                            paths.push(o.reverse())
+                        });
+
+                        new that.google.maps.Polygon({
+                            paths: paths,
+                            strokeWeight: 0,
+                            map: map,
+                            fillColor: '#FF0000',
+                            fillOpacity: 0.35
+                        });
+
+                        var pano = new that.google.maps.StreetViewPanorama(that.$refs.pano, {
+                            position: that.panoPosition,
+                            source: that.google.maps.StreetViewSource.OUTDOOR
+                        });
+                        map.setStreetView(pano);
+
+                        that.pano = pano;
+
+                        pano.addListener('position_changed', () => {
+                            var pos = pano.getPosition();
+
+                            if (pos !== that.previousPosition) {
+                                var isInBounds = false;
+                                for (var i = 0; i < that.polygons.length; i++) {
+                                    if (that.google.maps.geometry.poly.containsLocation(pos, that.polygons[i])) {
+                                        isInBounds = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!isInBounds) {
+                                    that.setSnackbarMessage("Please stay within the allocated area!");
+                                    pano.setPosition(that.previousPosition);
+                                } else {
+                                    that.previousPosition = pos;
                                 }
                             }
-
-                            if (!isInBounds) {
-                                this.showSnackbar = true;
-                                pano.setPosition(this.previousPosition);
-                            } else {
-                                this.previousPosition = pos;
-                            }
-                        }
+                        });
                     });
                 });
+            },
+            addExistingMarkers: function() {
+                var that = this;
+                for (var i = 0; i < that.existingSnapshots.length; i++) {
+                    var snapshot = that.existingSnapshots[i];
+
+                    var marker = new that.google.maps.Marker({
+                        index: i,
+                        position: snapshot.location,
+                        map: that.pano,
+                        title: 'Annotation'
+                    });
+
+                    marker.addListener('click', function () {
+                        that.showMarkerContent(this.index);
+                    });
+                }
+            },
+            showMarkerContent: function(index) {
+                this.snapshotIndex = index;
+                this.showSnapshot = true;
+            },
+            annotateFunc: function (ev) {
+                var overlay = this.$refs.overlay;
+
+                // Width and height of overlay div
+                var width = overlay.clientWidth;
+                var height = overlay.clientHeight;
+
+                // normalized x- and y-value based on the overlay div 
+                // in (-1, 1) range
+                var normX = 2 * ev.offsetX / width - 1;
+                var normY = 1 - 2 * ev.offsetY / height;
+
+                var position = this.pano.getPosition();
+                var zoom = this.pano.getZoom();
+                var {heading, pitch} = this.pano.getPov();
+                var fov = (180 / Math.pow(2, zoom));
+
+                var r = Raycast.createNew(heading, pitch, normX, normY, fov, width / height);
+                var l = r.get_latlng(position.lat(), position.lng());
+
+                if (l === null) {
+                    this.setSnackbarMessage("The point you clicked is on a too high angle in the panorama. Please move closer and/or click on the ground.");
+                } else {
+                    this.latestMarker = new this.google.maps.Marker({
+                        position: l,
+                        map: this.pano,
+                        title: 'Annotation'
+                    });
+
+                    this.annotations[this.annotationIndex] = {
+                        location: l,
+                        position: {},
+                        pov: {},
+                        First: "",
+                        Second: "",
+                        Third: "",
+                        Fourth: "",
+                        Fifth: ""
+                    };
+
+                    this.findStep = 2;
+                    this.showOverlay = false;
+                }
+            },
+            toggleAnnotation: async function () {
+                if (this.annotating) {
+                    this.showOverlay = false;
+                    this.findStep = 0;
+
+                    if (this.latestMarker) {
+                        this.latestMarker.setMap(null);
+                        this.annotations.pop();
+                    }
+                } else {
+                    this.findStep = 1;
+                    this.showOverlay = true;
+                }
+            },
+            takeSnapshot: function () {
+                this.panoPosition = this.pano.getPosition();
+                this.zoom = this.pano.getZoom();
+                this.pov = this.pano.getPov();
+                this.fov = (180 / Math.pow(2, this.zoom));
+
+                var url = "https://maps.googleapis.com/maps/api/streetview?size=320x320" +
+                    "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() +
+                    "&fov=" + this.fov +
+                    "&heading=" + this.pov.heading + "" +
+                    "&pitch=" + this.pov.pitch +
+                    "&key=" + process.env.VUE_APP_API_KEY;
+
+                var that = this;
+                var image = new Image();
+                image.onload = function () {
+                    var canvas = that.$refs.canvas;
+
+                    canvas.width = 320;
+                    canvas.height = 320;
+                    var ctx = canvas.getContext("2d");
+                    ctx.drawImage(image, 0, 0);
+                    that.imageUrl = canvas.toDataURL("image/png");
+
+                    that.annotations[that.annotationIndex]['position']['lat'] = that.panoPosition.lat();
+                    that.annotations[that.annotationIndex]['position']['lng'] = that.panoPosition.lng();
+                    that.annotations[that.annotationIndex]['pov']['heading'] = that.pov.heading;
+                    that.annotations[that.annotationIndex]['pov']['pitch'] = that.pov.pitch;
+                    that.annotations[that.annotationIndex]['First'] = that.imageUrl;
+                    that.annotationIndex++;
+
+                    that.findStep = that.annotationIndex < 5 ? 0 : 3;
+                };
+
+                image.setAttribute('crossOrigin', 'anonymous'); //
+                image.src = url;
+            },
+            submit: function () {
+                this.done = true;
+                this.showSubmit = false;
+                this.setFindAnnotations(this.annotations);
+                this.storeFile(['findAnnotations.json', this.annotations])
             }
         }
     };
@@ -200,6 +442,7 @@
     .md-tab {
         height: calc(100vh - 96px);
         max-height: 100%;
+        /*width: 100%;*/
     }
 
     .tab-one {
@@ -231,5 +474,95 @@
         margin: -16px 0 0 -16px;
         height: calc(100% + 32px);
         width: calc(100% + 32px);
+    }
+
+    .options {
+        width: 120px;
+        justify-content: center;
+        position: absolute;
+        left: calc(150vw - 60px);
+        top: 10px;
+        z-index: 999;
+    }
+
+    .annotate-button {
+        margin-right: 0;
+        margin-top: 0;
+    }
+
+    .snapshot-button {
+        position: absolute;
+        bottom: 10px;
+        left: calc(150vw - 28px)
+    }
+
+    .big-annotation {
+        margin-top: 8px;
+    }
+
+    .canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 320px;
+        height: 320px;
+        z-index: -1;
+    }
+
+    .overlay {
+        z-index: 998;
+        position: absolute;
+        top: 0;
+        left: 100vw;
+        width: 100vw;
+        background-color: rgba(0, 0, 0, 0);
+        height: calc(100vh - 96px) !important;
+    }
+
+    .overlay-circle {
+        position: absolute;
+        margin-left: calc(50vw - 25vh - 16px);
+        margin-top: calc(50vh - 25vh);
+        height: 50vh;
+        width: 50vh;
+        border: solid 3px rgb(255, 255, 255);
+        border-radius: 50%;
+        z-index: 997;
+    }
+
+    .tab-one, .tab-two {
+        padding: 16px !important;
+    }
+
+    .instruction-title {
+        margin-top: 0 !important;
+    }
+
+    .instructions {
+        text-align: center;
+        position: absolute;
+        /*z-index: 20;*/
+        width: 33%;
+    }
+
+    .submit-dialog {
+        z-index: 1000 !important;
+    }
+
+    .annotation-count {
+        text-align: center;
+        position: absolute;
+        z-index: 20;
+        bottom: -15px;
+        width: 140px;
+        color: white;
+        left: calc(150vw - 70px);
+    }
+</style>
+<style scoped>
+    .instructions {
+        top: 10px;
+        left: calc(100vw + 10px);
+        max-height: 154px !important;
     }
 </style>

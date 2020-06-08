@@ -46,7 +46,7 @@ const routes = [
   },
   {
     path: '/find/*',
-    name: 'find',
+    name: 'Find',
     component: Find,
     props: {}
   },
