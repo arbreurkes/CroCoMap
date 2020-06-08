@@ -68,7 +68,7 @@
                 <md-icon class="md-morph-final">sentiment_satisfied_alt</md-icon>
             </md-speed-dial-target>
             <md-speed-dial-content class="">
-                <md-button class="md-icon-button">
+                <md-button class="md-icon-button" @click="showHelp">
                     <md-tooltip md-direction="right">Show Help</md-tooltip>
                     <md-icon>help</md-icon>
                 </md-button>
@@ -150,7 +150,7 @@
         methods: {
             ...mapActions(['loadFixSnapshots', 'storeFile']),
             ...mapGetters(['getFixSnapshots']),
-            ...mapMutations(['setFixSnapshots']),
+            ...mapMutations(['setFixSnapshots', 'setShowTutorial']),
             initPano: function () {
                 this.pano = this.$refs.pano.$panoObject;
 
@@ -234,6 +234,9 @@
                 this.showSubmit = false;
                 this.setFixSnapshots(this.snapshots);
                 this.storeFile(['fixedSnapshots.json', this.snapshots]);
+            },
+            showHelp: function() {
+                this.setShowTutorial(true);
             }
         }
     };

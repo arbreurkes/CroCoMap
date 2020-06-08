@@ -33,11 +33,12 @@
         </md-drawer>
         <md-content class="main-content" id="main-content">
             <router-view></router-view>
+            <tutorial :showTutorial="showTutorial" :tutorialComplete="tutorialComplete"></tutorial>
             <md-dialog :md-active="locationPrompt">
                 <md-dialog-title>Where are you currently located?</md-dialog-title>
                 <md-dialog-content>
                     <md-field>
-                        <label for="location">Location</label>
+                        <label :for="location">Location</label>
                         <md-select v-model="location" name="location" id="location" md-dense>
                             <md-option v-for="l in locations" :key="l.value" :value="l">
                                 {{l}}
@@ -58,13 +59,23 @@
 
 <script>
     import { mapGetters, mapMutations } from 'vuex'
+    import Tutorial from "./components/pages/Tutorial";
 
     export default {
         name: 'app',
-        components: {},
+        components: {Tutorial},
         computed: {
+            locations: function() {
+                return this.getLocations();
+            },
             snackbarMessage: function() {
                 return this.getSnackbarMessage();
+            },
+            showTutorial: function() {
+                return this.getShowTutorial();
+            },
+            tutorialComplete: function() {
+                return this.getTutorialComplete();
             }
         },
         watch: {
@@ -77,21 +88,25 @@
                 if (!this.showSnackbar) {
                     this.setSnackbarMessage("");
                 }
+            },
+            tutorialComplete: function() {
+                if (this.location == null) {
+                    this.locationPrompt = true;
+                }
             }
         },
         data: () => ({
+            location: null,
             showNavigation: false,
             showSidepanel: false,
-            locationPrompt: true,
-            location: null,
-            locations: ["Delft", "New York", "Beijing", "Melbourne"].sort(),
+            locationPrompt: false,
             showSnackbar: false
         }),
         mounted() {
             this.location = this.getLocation();
         },
         methods: {
-            ...mapGetters(['getLocation', 'getSnackbarMessage']),
+            ...mapGetters(['getLocation', 'getSnackbarMessage', 'getShowTutorial', 'getTutorialComplete', 'getLocations']),
             ...mapMutations(['setLocation', 'setSnackbarMessage']),
             confirmLocation: function() {
                 this.setLocation(this.location);
@@ -230,5 +245,9 @@
 
     .omit-button:enabled {
         background-color: #d32f2f !important;
+    }
+
+    .md-content {
+        padding-bottom: 0 !important;
     }
 </style>

@@ -39,7 +39,7 @@
                             <md-icon class="md-morph-final">sentiment_satisfied_alt</md-icon>
                         </md-speed-dial-target>
                         <md-speed-dial-content class="">
-                            <md-button class="md-icon-button">
+                            <md-button class="md-icon-button" @click="showHelp">
                                 <md-tooltip md-direction="right">Show Help</md-tooltip>
                                 <md-icon>help</md-icon>
                             </md-button>
@@ -75,10 +75,10 @@
             <hr class="tab-divider"/>
             <md-dialog class="submit-dialog" :md-active="showSnapshot" v-if="showSnapshot">
                 <md-dialog-content class="dialog-content dialog-content-custom">
-                    <img class="fix-img" :src="existingSnapshots[snapshotIndex].First" alt="Image failed to load."/>
+                    <img class="fix-img" :src="imageSource" alt="Image failed to load."/>
                 </md-dialog-content>
                 <md-dialog-actions class="actions">
-                    <md-button class="md-icon-button unct-button md-raised" @click="showSnapshot = false">
+                    <md-button class="md-icon-button omit-button md-raised" @click="showSnapshot = false">
                         <md-tooltip md-direction="bottom" style="z-index: 1001;">Close</md-tooltip>
                         <md-icon>close</md-icon>
                     </md-button>
@@ -139,6 +139,7 @@
                 annotationIndex: 0,
                 annotations: [],
                 snapshotIndex: 0,
+                newMarker: false,
                 showSnapshot: false,
                 done: false
             }
@@ -162,6 +163,10 @@
             },
             pinButtonTooltip: function () {
                 return this.annotating ? "Cancel Annotation" : "Add Annotation";
+            },
+            imageSource: function () {
+                var index = this.snapshotIndex;
+                return this.newMarker ? this.annotations[index].First : this.existingSnapshots[index].First;
             }
         },
         watch: {
@@ -190,7 +195,7 @@
         },
         methods: {
             ...mapGetters(["getLocation", "getCoordinates", "getPosition", "getExistingSnapshots"]),
-            ...mapMutations(["setPosition", "setFindAnnotations", 'setSnackbarMessage']),
+            ...mapMutations(["setPosition", "setFindAnnotations", 'setSnackbarMessage', 'setShowTutorial']),
             ...mapActions(["storeFile", "loadExistingSnapshots"]),
             initMap: function () {
                 var that = this;
@@ -300,18 +305,20 @@
 
                     var marker = new that.google.maps.Marker({
                         index: i,
+                        isNewMaker: false,
                         position: snapshot.location,
                         map: that.pano,
                         title: 'Annotation'
                     });
 
                     marker.addListener('click', function () {
-                        that.showMarkerContent(this.index);
+                        that.showMarkerContent(this.index, this.isNewMarker);
                     });
                 }
             },
-            showMarkerContent: function(index) {
+            showMarkerContent: function(index, isNewMarker) {
                 this.snapshotIndex = index;
+                this.newMarker = isNewMarker;
                 this.showSnapshot = true;
             },
             annotateFunc: function (ev) {
@@ -338,6 +345,8 @@
                     this.setSnackbarMessage("The point you clicked is on a too high angle in the panorama. Please move closer and/or click on the ground.");
                 } else {
                     this.latestMarker = new this.google.maps.Marker({
+                        index: this.annotations.length,
+                        isNewMarker: true,
                         position: l,
                         map: this.pano,
                         title: 'Annotation'
@@ -404,16 +413,26 @@
                     that.annotationIndex++;
 
                     that.findStep = that.annotationIndex < 5 ? 0 : 3;
+                    that.assignMarkerClick();
                 };
 
                 image.setAttribute('crossOrigin', 'anonymous'); //
                 image.src = url;
+            },
+            assignMarkerClick: function() {
+                var that = this;
+                that.latestMarker.addListener('click', function () {
+                    that.showMarkerContent(this.index, this.isNewMarker);
+                });
             },
             submit: function () {
                 this.done = true;
                 this.showSubmit = false;
                 this.setFindAnnotations(this.annotations);
                 this.storeFile(['findAnnotations.json', this.annotations])
+            },
+            showHelp: function() {
+                this.setShowTutorial(true);
             }
         }
     };
@@ -455,7 +474,7 @@
     }
 
     .md-button.md-tab-nav-button {
-        max-width: 100vh !important;
+        max-width: 100vw !important;
     }
 
     .md-button.md-tab-nav-button.md-active {
