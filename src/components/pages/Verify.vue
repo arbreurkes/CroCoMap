@@ -16,6 +16,18 @@
                 <verify-card title="Fifth" :image="this.snapshots[voteIndex]['Fifth']" :index="voteIndex" :inGrid="true"
                              size="md-size-33"></verify-card>
             </div>
+            <md-speed-dial class="verify-dial" md-direction="top">
+                <md-speed-dial-target class="annotate-button vote-button">
+                    <md-icon class="md-morph-initial">menu_open</md-icon>
+                    <md-icon class="md-morph-final">sentiment_satisfied_alt</md-icon>
+                </md-speed-dial-target>
+                <md-speed-dial-content class="">
+                    <md-button class="md-icon-button" @click="showHelp">
+                        <md-tooltip md-direction="right">Show Help</md-tooltip>
+                        <md-icon>help</md-icon>
+                    </md-button>
+                </md-speed-dial-content>
+            </md-speed-dial>
         </div>
         <md-empty-state
                 v-if="done"
@@ -106,7 +118,7 @@
             this.loadVerifySnapshots();
         },
         methods: {
-            ...mapMutations(['setResults']),
+            ...mapMutations(['setResults', 'setShowTutorial']),
             ...mapActions(['updateVerifyVotes', 'loadVerifySnapshots', 'storeFile']),
             ...mapGetters(['getVerifySnapshots', 'getVerifyVotes']),
             uncertain: function () {
@@ -134,6 +146,9 @@
                 }
 
                 this.storeFile(['results.json', results])
+            },
+            showHelp: function() {
+                this.setShowTutorial(true);
             }
         }
     };
@@ -173,6 +188,13 @@
     }
 </style>
 <style>
+    .verify-dial {
+        position: absolute;
+        left: 10px;
+        bottom: 10px;
+        z-index: 999;
+    }
+
     .dialog-title-custom {
         text-align: center;
         margin-bottom: 0;

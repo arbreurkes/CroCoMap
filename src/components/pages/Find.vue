@@ -39,7 +39,7 @@
                             <md-icon class="md-morph-final">sentiment_satisfied_alt</md-icon>
                         </md-speed-dial-target>
                         <md-speed-dial-content class="">
-                            <md-button class="md-icon-button">
+                            <md-button class="md-icon-button" @click="showHelp">
                                 <md-tooltip md-direction="right">Show Help</md-tooltip>
                                 <md-icon>help</md-icon>
                             </md-button>
@@ -190,7 +190,7 @@
         },
         methods: {
             ...mapGetters(["getLocation", "getCoordinates", "getPosition", "getExistingSnapshots"]),
-            ...mapMutations(["setPosition", "setFindAnnotations", 'setSnackbarMessage']),
+            ...mapMutations(["setPosition", "setFindAnnotations", 'setSnackbarMessage', 'setShowTutorial']),
             ...mapActions(["storeFile", "loadExistingSnapshots"]),
             initMap: function () {
                 var that = this;
@@ -414,6 +414,9 @@
                 this.showSubmit = false;
                 this.setFindAnnotations(this.annotations);
                 this.storeFile(['findAnnotations.json', this.annotations])
+            },
+            showHelp: function() {
+                this.setShowTutorial(true);
             }
         }
     };

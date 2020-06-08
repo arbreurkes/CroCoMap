@@ -1,15 +1,15 @@
 <template>
     <md-dialog :md-active="showTutorial">
         <md-tabs class="tutorial-tab-container" md-dynamic-height :md-active-tab="activeTab + ''">
-            <md-tab id="0" class="tutorial-tab" md-label="Tutorial" :md-disabled=!tutorialComplete>
-                <div class="row">
+            <md-tab id="0" class="tutorial-tab" md-label="Tutorial" :md-disabled="true">
+                <div class="row" style="text-align: center;">
                     <h1>Welcome to CroCoMap!</h1>
                     <p>Before you are allowed to contribute, we ask you to complete this tutorial. Don't worry, you only need to do this once!</p>
                     <p>Good luck and stay safe!</p>
                     <p>The CroCoMap Team</p>
                 </div>
             </md-tab>
-            <md-tab id="1" class="tutorial-tab" md-label="Find task" :md-disabled=!tutorialComplete>
+            <md-tab id="1" class="tutorial-tab" md-label="Find task" :md-disabled=true>
                 <div class="columnleft">
                     <h3>Find Task</h3>
                     <p>The goal of the Find task is to find and annotate high-risk objects.</p>
@@ -22,7 +22,7 @@
                     <img class="tutorial-image" src="/images/findTask.gif" alt="Image failed to load."/>
                 </div>
             </md-tab>
-            <md-tab id="2" class="tutorial-tab" md-label="Fix task" :md-disabled=!tutorialComplete>
+            <md-tab id="2" class="tutorial-tab" md-label="Fix task" :md-disabled=true>
                 <div class="columnleft">
                     <h3>Fix Task</h3>
                     <p>In the Fix Task, you are given an already annotated area and are asked to fix the annotations if needed. </p>
@@ -33,7 +33,7 @@
                     <img class="tutorial-image" src="/images/fixTask.gif" alt="Image failed to load."/>
                 </div>
             </md-tab>
-            <md-tab id="3" class="tutorial-tab" md-label="Verify task" :md-disabled=!tutorialComplete>
+            <md-tab id="3" class="tutorial-tab" md-label="Verify task" :md-disabled=true>
                 <div class="columnleft">
                     <h3>Verify Task</h3>
                     <p>In this Verify task, the goal is to find annotated objects that are high-risk and to select the annotation that is most precise and clear in terms of location and snapshot.</p>
@@ -44,7 +44,7 @@
                     <img class="tutorial-image" src="/images/verifyGif.gif" alt="Image failed to load."/>
                 </div>
             </md-tab>
-            <md-tab id="4" class="tutorial-tab" md-label="Done" :md-disabled=!tutorialComplete style="text-align: center;">
+            <md-tab id="4" class="tutorial-tab" md-label="Done" :md-disabled=true style="text-align: center;">
                 <h3>Well done! You should be ready to start annotating!</h3>
                 <p>Good luck and stay safe!</p>
                 <p>The CroCoMap Team</p>
@@ -55,8 +55,11 @@
             <md-button class="md-raised omit-button md-icon-button" @click="activeTab--" :disabled="activeTab < 1">
                 <md-icon>arrow_back</md-icon>
             </md-button>
-            <md-button class="md-raised vote-button md-icon-button" @click="nextButtonCall()">
-                <md-icon>{{rightButton}}</md-icon>
+            <md-button class="md-raised vote-button md-icon-button" @click="nextButtonCall()" :disabled="activeTab === 4">
+                <md-icon>arrow_forward</md-icon>
+            </md-button>
+            <md-button class="md-raised vote-button md-icon-button" @click="closeTutorial" :disabled="!canClose">
+                <md-icon>check</md-icon>
             </md-button>
         </md-dialog-actions>
     </md-dialog>
@@ -77,8 +80,8 @@
             }
         },
         computed: {
-            rightButton: function() {
-                return this.activeTab < 4 ? "arrow_forward" : "check";
+            canClose: function() {
+                return this.tutorialComplete || this.activeTab === 4;
             }
         },
         watch: {},
@@ -89,11 +92,12 @@
             nextButtonCall: function () {
                 if (this.activeTab < 4) {
                     this.activeTab++;
-                } else {
-                    this.activeTab = 0;
-                    this.setShowTutorial(false);
-                    this.setTutorialComplete(true);
                 }
+            },
+            closeTutorial: function() {
+                this.activeTab = 0;
+                this.setShowTutorial(false);
+                this.setTutorialComplete(true);
             }
         }
     };
@@ -141,12 +145,15 @@
     .tutorial-image {
         margin-top: 52px;
         width: 100% !important;
+        max-width: 476px !important;
+        max-height: 270px !important;
     }
     .columnleft {
         float: left;
         width: 40%;
     }
     .columnright {
+        text-align: center;
         float: left;
         width: 60%;
     }

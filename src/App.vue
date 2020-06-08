@@ -29,14 +29,11 @@
                 <md-list-item @click="showNavigation = false" to="/verify/">
                     Verify
                 </md-list-item>
-                <md-list-item @click="showNavigation = false" to="/tutorial/">
-                    Tutorial
-                </md-list-item>
             </md-list>
         </md-drawer>
         <md-content class="main-content" id="main-content">
             <router-view></router-view>
-            <tutorial :showTutorial="showTutorial" :complete="tutorialComplete"></tutorial>
+            <tutorial :showTutorial="showTutorial" :tutorialComplete="tutorialComplete"></tutorial>
             <md-dialog :md-active="locationPrompt">
                 <md-dialog-title>Where are you currently located?</md-dialog-title>
                 <md-dialog-content>
@@ -248,5 +245,9 @@
 
     .omit-button:enabled {
         background-color: #d32f2f !important;
+    }
+
+    .md-content {
+        padding-bottom: 0 !important;
     }
 </style>
