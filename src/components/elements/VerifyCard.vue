@@ -59,7 +59,7 @@
             ...mapActions(['updateVerifyVotes']),
             ...mapGetters(['getVerifyVotes']),
             verify: function() {
-                this.updateVerifyVotes(this.image);
+                this.updateVerifyVotes(this.title);
                 this.verifyPrompt = false;
             }
         }
