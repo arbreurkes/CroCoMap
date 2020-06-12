@@ -13,7 +13,7 @@
                 <div class="columnleft">
                     <h3>Find Task</h3>
                     <p>The goal of the Find task is to find and annotate high-risk objects.</p>
-                    <p>We define a high-risk object as an object that bight be touched by many different people (doorhandles, trash bins and park benches).</p>
+                    <p>We define a high-risk object as an object that might be touched by many different people (door handles, trash bins and park benches).</p>
                     <p>You are able to navigate through a bounded area in Google Street View. </p>
                     <p>Once you located a high-risk object, you are expected to annotate the object by clicking on it. </p>
                     <p>A pin is placed and you will be able to take a snapshot of the object by zooming in as much as needed for it to fill the screen. Click on the camera icon on the bottom to take the snapshot.</p>
