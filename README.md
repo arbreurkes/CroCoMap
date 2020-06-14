@@ -1,5 +1,5 @@
 # CroCoMap - Crowdsources Corona Map
-This repository contains CroCoMap, the Crowdsourced Corona Map platform designed and implemented for Crowd Computing 2020 at Delft Univerity of Technology by Group 2.
+This repository contains CroCoMap, the Crowdsourced Corona Map platform designed and implemented for Crowd Computing 2020 at Delft Univerity of Technology by Group 2. For documentation, view the [Implementation Document](https://github.com/nubcaker/CroCoMap/blob/documentation/CroCoMap-Implementation-Document.pdf) and the inline comments in the code. For any additional questions or help, contact us.
 
 ## Before installing
 For this project to run, you will need a Google cloud API keys with the following enabled:
