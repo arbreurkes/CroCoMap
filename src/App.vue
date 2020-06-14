@@ -59,7 +59,7 @@
 
 <script>
     import { mapGetters, mapMutations } from 'vuex'
-    import Tutorial from "./components/pages/Tutorial";
+    import Tutorial from "./components/elements/Tutorial";
 
     export default {
         name: 'app',
