@@ -56,7 +56,6 @@
         </md-content>
     </div>
 </template>
-
 <script>
     import { mapGetters, mapMutations } from 'vuex'
     import Tutorial from "./components/elements/Tutorial";
@@ -65,50 +64,49 @@
         name: 'app',
         components: {Tutorial},
         computed: {
-            locations: function() {
+            locations: function() { // Locations as predefined in the store.
                 return this.getLocations();
             },
-            snackbarMessage: function() {
+            snackbarMessage: function() { // Message to display on the snackbar.
                 return this.getSnackbarMessage();
             },
-            showTutorial: function() {
+            showTutorial: function() { // Determine whether tutorial should be shown.
                 return this.getShowTutorial();
             },
-            tutorialComplete: function() {
+            tutorialComplete: function() { // Determines whether user has completed the tutorial.
                 return this.getTutorialComplete();
             }
         },
         watch: {
-            snackbarMessage: function() {
+            snackbarMessage: function() { // Watch snackbarMessage, when non-empty, show snackbar.
                 if (this.snackbarMessage !== "") {
                     this.showSnackbar = true;
                 }
             },
-            showSnackbar: function() {
+            showSnackbar: function() { // Reset snackbarMessage after automatically hiding snackbar.
                 if (!this.showSnackbar) {
                     this.setSnackbarMessage("");
                 }
             },
-            tutorialComplete: function() {
+            tutorialComplete: function() { // On completing tutorial for the first time, ask for location.
                 if (this.location == null) {
                     this.locationPrompt = true;
                 }
             }
         },
         data: () => ({
-            location: null,
-            showNavigation: false,
-            showSidepanel: false,
-            locationPrompt: false,
-            showSnackbar: false
+            location: null, // The worker's specified location.
+            showNavigation: false, // Show drawer or not.
+            locationPrompt: false, // Show location prompt or not.
+            showSnackbar: false // Show snackbar or not.
         }),
-        mounted() {
+        mounted() { // On first initialization.
             this.location = this.getLocation();
         },
         methods: {
             ...mapGetters(['getLocation', 'getSnackbarMessage', 'getShowTutorial', 'getTutorialComplete', 'getLocations']),
             ...mapMutations(['setLocation', 'setSnackbarMessage']),
-            confirmLocation: function() {
+            confirmLocation: function() { // Worker confirms their preferred location.
                 this.setLocation(this.location);
                 this.locationPrompt = false;
             }

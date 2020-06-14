@@ -37,13 +37,13 @@
     export default {
         name: 'StreetviewCard',
         props: {
-            size: String,
-            inGrid: Boolean,
-            position: Object,
-            pov: Object
+            size: String, // Size of card in gutter.
+            inGrid: Boolean, // Is this card in gutter?
+            position: Object, // Position of the street view.
+            pov: Object // Pov of the street view
         },
         computed: {
-            google: gmapApi
+            google: gmapApi // Google API
         },
         methods: {}
     };

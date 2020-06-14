@@ -42,25 +42,24 @@
     export default {
         name: 'VerifyCard',
         props: {
-            title: String,
-            size: String,
-            inGrid: Boolean,
-            image: String,
-            index: Number
+            title: String, // Title of the card.
+            size: String, // Size of card in gutter.
+            inGrid: Boolean, // Is this card in gutter?
+            image: String, // B64 encoded image of the snapshot to show.
+            index: Number // Index of the snapshot in the annotation object.
         },
         data: function() {
           return {
-              verifyPrompt: false,
-              selectedAnnotation: null
+              verifyPrompt: false, // Prompt confirmation for voting for snapshot?
           }
         },
         computed: {},
         methods: {
             ...mapActions(['updateVerifyVotes']),
             ...mapGetters(['getVerifyVotes']),
-            verify: function() {
-                this.updateVerifyVotes(this.image);
-                this.verifyPrompt = false;
+            verify: function() { // Confirm the vote.
+                this.updateVerifyVotes(this.image); // Vote image string, could be changed to image index if you like.
+                this.verifyPrompt = false; // Stop showing the confirmation prompt.
             }
         }
     };

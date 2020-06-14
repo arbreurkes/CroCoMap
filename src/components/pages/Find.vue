@@ -117,79 +117,78 @@
         components: {},
         data: function () {
             return {
-                position: {lat: 0, lng: 0},
-                panoPosition: {},
-                previousPosition: this.position,
-                polygons: [],
-                outerCoords: [{lat: 90, lng: -90}, {lat: 90, lng: 90}, {lat: 90, lng: 180}, {lat: 90, lng: -90},
+                position: {lat: 0, lng: 0}, // Center of the map.
+                panoPosition: {}, // Position of the street view.
+                previousPosition: this.position, // The last position, initialized to the first position.
+                polygons: [], // Array of all the rectangles to draw on the map, can be any polygon.
+                outerCoords: [{lat: 90, lng: -90}, {lat: 90, lng: 90}, {lat: 90, lng: 180}, {lat: 90, lng: -90},  // Draw a red overlay over the entire map.
                     {lat: -90, lng: -90}, {lat: -90, lng: 180}, {lat: -90, lng: 90}, {lat: -90, lng: -90}],
-                innerCoords: [],
-                showOverlay: false,
-                showSubmit: false,
-                canvasSource: "",
-                imageUrl: "",
-                instructions: [
+                innerCoords: [], // Array of polygons that will actually be drawn, are the reversed of the polygons array.
+                showOverlay: false, // Show the overlay cirlce during annotation.
+                showSubmit: false, // Show the submit dialog.
+                imageUrl: "", // Source of the image for taking snapshots.
+                instructions: [ // Array of instructions to show in the instructions card.
                     "Click the push pin button at the top of the screen to start annotating. Alternatively, show help using the menu button.",
                     "Place a marker by clicking on the image. Clicking inside the circle achieves the highest accuracy.",
                     "Zoom all the way in and pan to the object, then click the screenshot button at the bottom of the screen.",
                     "Well done, you annotated five objects. Submit your work through the left button at the top of the screen."
                 ],
-                findStep: 0,
-                latestMarker: null,
-                annotationIndex: 0,
-                annotations: [],
-                snapshotIndex: 0,
-                newMarker: false,
-                showSnapshot: false,
-                done: false
+                findStep: 0, // Index of which step you're at in the find process, used for showing instructions.
+                latestMarker: null, // Last marker the worker placed.
+                annotationIndex: 0, // Index of annotation working on.
+                annotations: [], // Array of annotations made by worker.
+                snapshotIndex: 0, // Index of snapshot to view.
+                newMarker: false, // Indicates whether the clicked marker is from a new annotation, or one made by another worker.
+                showSnapshot: false, // Indicates whether to view snapshot belonging to marker, true on clicking a marker.
+                done: false // True on submitting task.
             }
         },
         computed: {
-            google: gmapApi,
-            location: function () {
+            google: gmapApi, // Google Maps API
+            location: function () { // Get the location from store.
                 return this.getLocation()
             },
-            existingSnapshots: function() {
+            existingSnapshots: function() { // Get the annotations that other workers have made.
                 return this.getExistingSnapshots()
             },
-            annotating: function () {
+            annotating: function () { // Is the worker currently annotating?
                 return this.findStep > 0 && this.findStep < 3;
             },
-            pinButtonClass: function () {
+            pinButtonClass: function () { // Determines color of annotation button.
                 return this.annotating ? "omit-button" : "vote-button";
             },
-            pinButtonIcon: function () {
+            pinButtonIcon: function () { // Determines icon of annotation button.
                 return this.annotating ? "close" : "push_pin";
             },
-            pinButtonTooltip: function () {
+            pinButtonTooltip: function () { // Determines tooltip of annotation button.
                 return this.annotating ? "Cancel Annotation" : "Add Annotation";
             },
-            imageSource: function () {
+            imageSource: function () { // Determines image source for showing snapshot belonging to a marker.
                 var index = this.snapshotIndex;
                 return this.newMarker ? this.annotations[index].First : this.existingSnapshots[index].First;
             }
         },
         watch: {
-            location: {
-                immediate: true,
-                handler: function () {
-                    if (this.location !== null) {
-                        this.loadExistingSnapshots();
-                        this.position = this.getCoordinates();
-                        this.$nextTick(() => {
-                            this.initMap();
+            location: { // Watch the location
+                immediate: true, // Watch immediately (also on first instantiation).
+                handler: function () { // Handler method.
+                    if (this.location !== null) { // If location is set
+                        this.loadExistingSnapshots(); // Load the existing snapshots from file.
+                        this.position = this.getCoordinates(); // Set the position to the coordinates belonging to the location.
+                        this.$nextTick(() => { // On Vue's next tick (time).
+                            this.initMap(); // Call the initialize map method.
                         });
                     }
                 }
             },
-            existingSnapshots: function() {
-                this.addExistingMarkers();
+            existingSnapshots: function() { // Watch the existing annotation.
+                this.addExistingMarkers(); // Add the existing annotations to the street view.
             }
         },
-        mounted: function () {
-            this.$nextTick(() => {
-                if (this.$route.path === "/find/") {
-                    this.$router.push("/find/tabOne")
+        mounted: function () { // On first loading this page.
+            this.$nextTick(() => { // On Vue's next tick (time).
+                if (this.$route.path === "/find/") { // If the route is just "/find/"
+                    this.$router.push("/find/tabOne") // Set to this route (otherwise tabs' styles do not correspond).
                 }
             });
         },
@@ -197,242 +196,242 @@
             ...mapGetters(["getLocation", "getCoordinates", "getPosition", "getExistingSnapshots"]),
             ...mapMutations(["setPosition", "setFindAnnotations", 'setSnackbarMessage', 'setShowTutorial']),
             ...mapActions(["storeFile", "loadExistingSnapshots"]),
-            initMap: function () {
-                var that = this;
-                that.$refs.mapRef.$mapPromise.then((map) => {
-                    that.google.maps.event.addListenerOnce(map, 'idle', function () {
-                        var bounds = map.getBounds();
-                        var latBounds = bounds.Ya;
-                        var lngBounds = bounds.Ua;
-                        var latDiff = Math.abs(latBounds.i - latBounds.j);
-                        var lngDiff = Math.abs(lngBounds.i - lngBounds.j);
+            initMap: function () { // Initialize map method.
+                var that = this; // For nested calls.
+                that.$refs.mapRef.$mapPromise.then((map) => { // Wait for maps API to be loaded, then callback =>
+                    that.google.maps.event.addListenerOnce(map, 'idle', function () { // Add listener once to map being completely loaded and now idle
+                        var bounds = map.getBounds(); // Get the bounds of the map relative to the screen width and height
+                        var latBounds = bounds.Ya; // Get the latitude bounds
+                        var lngBounds = bounds.Ua; // Get the longtitude bounds
+                        var latDiff = Math.abs(latBounds.i - latBounds.j); // Get width of screen in coordinates
+                        var lngDiff = Math.abs(lngBounds.i - lngBounds.j); // Get height of screen in coordinates
 
-                        var fractions = 144;
-                        var steps = Math.sqrt(fractions);
-                        var boxLatDiff = latDiff / steps;
-                        var boxLngDiff = lngDiff / steps;
+                        var fractions = 144; // Determine the amount of rectangles to divide the map into
+                        var steps = Math.sqrt(fractions); // That is n by n steps, where n = sqrt(fractions)
+                        var boxLatDiff = latDiff / steps; // width per box
+                        var boxLngDiff = lngDiff / steps; // height per box
 
-                        var rectangles = [];
-                        for (var i = 0; i < steps; i++) {
+                        var rectangles = []; // Array of all rectangles the screen is divided into
+                        for (var i = 0; i < steps; i++) { // These get the south-west bound of each rectangle
                             for (var j = 0; j < steps; j++) {
                                 rectangles.push({lat: latBounds.i + boxLatDiff * i, lng: lngBounds.i + boxLngDiff * j})
                             }
                         }
 
-                        var assignedAreas = [];
-                        while(assignedAreas.length < 5) {
-                            var random = Math.floor(Math.random() * fractions);
-                            if (!assignedAreas.includes(random)) assignedAreas.push(random);
+                        var assignedAreas = []; // Array of areas the worker will be assigned
+                        while(assignedAreas.length < 5) { // Select 5, can be set to anything you want <= fractions
+                            var random = Math.floor(Math.random() * fractions); // randomly assign areas
+                            if (!assignedAreas.includes(random)) assignedAreas.push(random); // randomly assign areas
                         }
 
-                        var positioned = false;
-                        assignedAreas.forEach(i => {
-                            var startLat = rectangles[i].lat;
-                            var startLng = rectangles[i].lng;
+                        var positioned = false; // Has street view been set to position?
+                        assignedAreas.forEach(i => { // For each assigned area:
+                            var startLat = rectangles[i].lat; // Get starting latitude
+                            var startLng = rectangles[i].lng; // Get starting longtitude
 
-                            that.innerCoords[that.innerCoords.length] = [{lat: startLat, lng: startLng},
+                            that.innerCoords[that.innerCoords.length] = [{lat: startLat, lng: startLng}, // Get all outer coordinates of the box
                                 {lat: startLat + boxLatDiff, lng: startLng},
                                 {lat: startLat + boxLatDiff, lng: startLng + boxLngDiff},
                                 {lat: startLat, lng: startLng + boxLngDiff},
-                                {lat: startLat, lng: startLng}];
+                                {lat: startLat, lng: startLng}]; // First coordinate twice, otherwise line is not finished.
 
-                            that.polygons[that.polygons.length] = new that.google.maps.Polygon({
-                                paths: that.innerCoords[that.innerCoords.length - 1],
-                                strokeColor: '#0000FF',
-                                strokeOpacity: 0.3,
-                                strokeWeight: 1,
-                                map: map,
-                                fillOpacity: 0.0
+                            that.polygons[that.polygons.length] = new that.google.maps.Polygon({ // Make a polygon out of it
+                                paths: that.innerCoords[that.innerCoords.length - 1], // Select path
+                                strokeColor: '#0000FF', // Set the color of the stroke of the rectangle, can be anything you like
+                                strokeOpacity: 0.3, // Opacity of stroke
+                                strokeWeight: 1, // Thin or thick stroke
+                                map: map, // Map object to apply it to
+                                fillOpacity: 0.0 // Opacity of fill color (transparent)
                             });
 
-                            if (!positioned) {
-                                that.panoPosition = {
-                                    lat: startLat + (boxLatDiff / 2),
-                                    lng: startLng + (boxLngDiff / 2)
+                            if (!positioned) { // If position of street view not yet set.
+                                that.panoPosition = { // Set street view position
+                                    lat: startLat + (boxLatDiff / 2), // Center width of rectangle
+                                    lng: startLng + (boxLngDiff / 2) // Center height of rectangle
                                 };
-                                positioned = true;
+                                positioned = true; // Street view is now positioned.
                             }
                         });
 
-                        var paths = [that.outerCoords];
-                        that.innerCoords.forEach((o) => {
-                            paths.push(o.reverse())
+                        var paths = [that.outerCoords]; // Add the red overlay to the paths array.
+                        that.innerCoords.forEach((o) => { // For each of the rectangles drawn above:
+                            paths.push(o.reverse()) // Push the reverse of the polygons to the paths, otherwise red overlay will draw over them.
                         });
 
-                        new that.google.maps.Polygon({
-                            paths: paths,
-                            strokeWeight: 0,
-                            map: map,
-                            fillColor: '#FF0000',
-                            fillOpacity: 0.35
+                        new that.google.maps.Polygon({ // Create and draw red overlay
+                            paths: paths, // paths to draw
+                            strokeWeight: 0, // stroke of the polygon
+                            map: map, // Map to apply it to
+                            fillColor: '#FF0000', // Color of the overlay
+                            fillOpacity: 0.35 // Opacity of the fill color
                         });
 
-                        var pano = new that.google.maps.StreetViewPanorama(that.$refs.pano, {
-                            position: that.panoPosition,
-                            source: that.google.maps.StreetViewSource.OUTDOOR
+                        var pano = new that.google.maps.StreetViewPanorama(that.$refs.pano, { // Initialize street view panorama
+                            position: that.panoPosition, // Set to this position
+                            source: that.google.maps.StreetViewSource.OUTDOOR // Use only outdoor street view (does not work for some reason...)
                         });
-                        map.setStreetView(pano);
+                        map.setStreetView(pano); // Assign panorama to the map object.
 
-                        that.pano = pano;
+                        that.pano = pano; // Set Find.pano to the created panorama.
 
-                        pano.addListener('position_changed', () => {
-                            var pos = pano.getPosition();
+                        pano.addListener('position_changed', () => { // Add a listener to the panorama for changing positions, somehow always fires twices (known bug)
+                            var pos = pano.getPosition(); // Get the new position
 
-                            if (pos !== that.previousPosition) {
-                                var isInBounds = false;
-                                for (var i = 0; i < that.polygons.length; i++) {
-                                    if (that.google.maps.geometry.poly.containsLocation(pos, that.polygons[i])) {
-                                        isInBounds = true;
-                                        break;
+                            if (pos !== that.previousPosition) { // If the new position is not the same as the old
+                                var isInBounds = false; // Moved inside designated areas?
+                                for (var i = 0; i < that.polygons.length; i++) { // For each of the designated areas
+                                    if (that.google.maps.geometry.poly.containsLocation(pos, that.polygons[i])) { // Check whether new position is inside
+                                        isInBounds = true; // if so, true
+                                        break; // break out of loop to save time and money.
                                     }
                                 }
 
-                                if (!isInBounds) {
-                                    that.setSnackbarMessage("Please stay within the allocated area!");
-                                    pano.setPosition(that.previousPosition);
+                                if (!isInBounds) { // Not in bounds?
+                                    that.setSnackbarMessage("Please stay within the allocated area!"); // Warn worker using snackbar.
+                                    pano.setPosition(that.previousPosition); // Move them back to their previous location.
                                 } else {
-                                    that.previousPosition = pos;
+                                    that.previousPosition = pos; // Update previous location.
                                 }
                             }
                         });
                     });
                 });
             },
-            addExistingMarkers: function() {
-                var that = this;
-                for (var i = 0; i < that.existingSnapshots.length; i++) {
-                    var snapshot = that.existingSnapshots[i];
+            addExistingMarkers: function() { // Add markers for already existing annotations.
+                var that = this; // For nested calls.
+                for (var i = 0; i < that.existingSnapshots.length; i++) { // For each existing annotation.
+                    var snapshot = that.existingSnapshots[i]; // Get the annotation from the array.
 
-                    var marker = new that.google.maps.Marker({
-                        index: i,
-                        isNewMaker: false,
-                        position: snapshot.location,
-                        map: that.pano,
-                        title: 'Annotation'
+                    var marker = new that.google.maps.Marker({ // Initialize a marker using the API.
+                        index: i, // Custom variable, set the index of the snapshot array.
+                        isNewMaker: false, // It's a marker created by another worker (old).
+                        position: snapshot.location, // Set the position of the marker.
+                        map: that.pano, // Assign to panorama object.
+                        title: 'Annotation' // Shows on hover.
                     });
 
-                    marker.addListener('click', function () {
-                        that.showMarkerContent(this.index, this.isNewMarker);
+                    marker.addListener('click', function () { // Add on-click listener to marker.
+                        that.showMarkerContent(this.index, this.isNewMarker); // Show the snapshot belonging to the marker (index, old)
                     });
                 }
             },
-            showMarkerContent: function(index, isNewMarker) {
-                this.snapshotIndex = index;
-                this.newMarker = isNewMarker;
-                this.showSnapshot = true;
+            showMarkerContent: function(index, isNewMarker) { // Trigger showing an existing (new or old, snapshot)
+                this.snapshotIndex = index; // determine the index in array.
+                this.newMarker = isNewMarker; // determine whether it's a new marker or not.
+                this.showSnapshot = true; // Trigger showing the dialog.
             },
-            annotateFunc: function (ev) {
-                var overlay = this.$refs.overlay;
+            annotateFunc: function (ev) { // Place a marker funtion.
+                var overlay = this.$refs.overlay; // Select the overlay HTML object.
 
                 // Width and height of overlay div
-                var width = overlay.clientWidth;
-                var height = overlay.clientHeight;
+                var width = overlay.clientWidth; // Get width of overlay.
+                var height = overlay.clientHeight; // Get height of overlay.
 
-                // normalized x- and y-value based on the overlay div 
-                // in (-1, 1) range
+                // normalized x- and y-value based on the overlay div .
+                // in (-1, 1) range.
                 var normX = 2 * ev.offsetX / width - 1;
                 var normY = 1 - 2 * ev.offsetY / height;
 
-                var position = this.pano.getPosition();
-                var zoom = this.pano.getZoom();
-                var {heading, pitch} = this.pano.getPov();
-                var fov = (180 / Math.pow(2, zoom));
+                var position = this.pano.getPosition(); // Get the current panorama position.
+                var zoom = this.pano.getZoom(); // Get the zoom level of the street view.
+                var {heading, pitch} = this.pano.getPov(); // Get the POV of the street view.
+                var fov = (180 / Math.pow(2, zoom)); // Get the fov of the street view.
 
-                var r = Raycast.createNew(heading, pitch, normX, normY, fov, width / height);
-                var l = r.get_latlng(position.lat(), position.lng());
+                var r = Raycast.createNew(heading, pitch, normX, normY, fov, width / height); // Start raycasting.
+                var l = r.get_latlng(position.lat(), position.lng()); // get the coordinates for placing the marker.
 
-                if (l === null) {
+                if (l === null) { // Couldn't get coordinates? Show warning.
                     this.setSnackbarMessage("The point you clicked is on a too high angle in the panorama. Please move closer and/or click on the ground.");
                 } else {
-                    this.latestMarker = new this.google.maps.Marker({
-                        index: this.annotations.length,
-                        isNewMarker: true,
-                        position: l,
-                        map: this.pano,
-                        title: 'Annotation'
+                    this.latestMarker = new this.google.maps.Marker({ // Else, create new marker.
+                        index: this.annotations.length, // New index.
+                        isNewMarker: true, // This is a new marker, not previously made by another worker.
+                        position: l, // Set the position to the just raycasted value.
+                        map: this.pano, // Apply it to the panorama.
+                        title: 'Annotation' // Shows on hover.
                     });
 
-                    this.annotations[this.annotationIndex] = {
-                        location: l,
-                        position: {},
-                        pov: {},
-                        First: "",
-                        Second: "",
-                        Third: "",
-                        Fourth: "",
-                        Fifth: ""
+                    this.annotations[this.annotationIndex] = { // Initialize object for annotation array.
+                        location: l, // Location of marker
+                        position: {}, // position of street view
+                        pov: {}, // pov of street view
+                        First: "", // first possible b64 encoded snapshot (never empty after taking snapshot)
+                        Second: "", // second possible b64 encoded snapshot
+                        Third: "", // third possible b64 encoded snapshot
+                        Fourth: "", // fourth possible b64 encoded snapshot
+                        Fifth: "" // fifth possible b64 encoded snapshot
                     };
 
-                    this.findStep = 2;
-                    this.showOverlay = false;
+                    this.findStep = 2; // Move to the next step in the find task (taking snapshot)
+                    this.showOverlay = false; // Stop showing overlay (circle)
                 }
             },
-            toggleAnnotation: async function () {
-                if (this.annotating) {
-                    this.showOverlay = false;
-                    this.findStep = 0;
+            toggleAnnotation: async function () { // Function that toggles annotation process.
+                if (this.annotating) { // If worker is annotating
+                    this.showOverlay = false; // Stop showing overlay (circle)
+                    this.findStep = 0; // Go back to first find step
 
-                    if (this.latestMarker) {
-                        this.latestMarker.setMap(null);
-                        this.annotations.pop();
+                    if (this.latestMarker) { // If a marker was set.
+                        this.latestMarker.setMap(null); // Remove it from the street view.
+                        this.annotations.pop(); // Remove the last added annotation object from the array.
                     }
                 } else {
-                    this.findStep = 1;
-                    this.showOverlay = true;
+                    this.findStep = 1; // Else, start annotating.
+                    this.showOverlay = true; // Show the overlay (circle).
                 }
             },
-            takeSnapshot: function () {
-                this.panoPosition = this.pano.getPosition();
-                this.zoom = this.pano.getZoom();
-                this.pov = this.pano.getPov();
-                this.fov = (180 / Math.pow(2, this.zoom));
+            takeSnapshot: function () { // Function to take a snapshot.
+                this.panoPosition = this.pano.getPosition(); // Get the street view position.
+                this.zoom = this.pano.getZoom(); // Get the zoom level.
+                this.pov = this.pano.getPov(); // Get the pov.
+                this.fov = (180 / Math.pow(2, this.zoom)); // Calculate fov.
 
-                var url = "https://maps.googleapis.com/maps/api/streetview?size=320x320" +
-                    "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() +
-                    "&fov=" + this.fov +
+                var url = "https://maps.googleapis.com/maps/api/streetview?size=320x320" + // Load image from Static Street View API
+                    "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() + // Snapshot cannot be taken from regular panorama
+                    "&fov=" + this.fov + // for security reasons.
                     "&heading=" + this.pov.heading + "" +
                     "&pitch=" + this.pov.pitch +
                     "&key=" + process.env.VUE_APP_API_KEY;
 
-                var that = this;
-                var image = new Image();
-                image.onload = function () {
-                    var canvas = that.$refs.canvas;
+                var that = this; // For nested calls.
+                var image = new Image(); // Create new HTML image.
+                image.onload = function () { // Set on-load listener.
+                    var canvas = that.$refs.canvas; // Get the canvas to draw the image on.
 
                     canvas.width = 320;
                     canvas.height = 320;
                     var ctx = canvas.getContext("2d");
                     ctx.drawImage(image, 0, 0);
-                    that.imageUrl = canvas.toDataURL("image/png");
+                    that.imageUrl = canvas.toDataURL("image/png"); // Convert canvas content to b64.
 
                     that.annotations[that.annotationIndex]['position']['lat'] = that.panoPosition.lat();
                     that.annotations[that.annotationIndex]['position']['lng'] = that.panoPosition.lng();
                     that.annotations[that.annotationIndex]['pov']['heading'] = that.pov.heading;
                     that.annotations[that.annotationIndex]['pov']['pitch'] = that.pov.pitch;
                     that.annotations[that.annotationIndex]['First'] = that.imageUrl;
-                    that.annotationIndex++;
+                    that.annotationIndex++; // Set all variables for the new annotation to their correct value.
 
-                    that.findStep = that.annotationIndex < 5 ? 0 : 3;
-                    that.assignMarkerClick();
+                    that.findStep = that.annotationIndex < 5 ? 0 : 3;  // Show worker "well done" if made more that five annotations.
+                    that.assignMarkerClick(); // Assign the on-click function.
                 };
 
-                image.setAttribute('crossOrigin', 'anonymous'); //
-                image.src = url;
+                image.setAttribute('crossOrigin', 'anonymous'); // Set image to be able to get from CrossOrigin.
+                image.src = url; // Set the source of the image object.
             },
-            assignMarkerClick: function() {
-                var that = this;
-                that.latestMarker.addListener('click', function () {
-                    that.showMarkerContent(this.index, this.isNewMarker);
+            assignMarkerClick: function() { // Function to add an on-click listener to the marker.
+                var that = this; // For nested call.
+                that.latestMarker.addListener('click', function () { // on-click listener:
+                    that.showMarkerContent(this.index, this.isNewMarker); // Show snapshot for marker (index, isNew?)
                 });
             },
-            submit: function () {
-                this.done = true;
-                this.showSubmit = false;
-                this.setFindAnnotations(this.annotations);
-                this.storeFile(['findAnnotations.json', this.annotations])
+            submit: function () { // function to submit the task.
+                this.done = true; // Set done variable to true
+                this.showSubmit = false; // Do not show submit dialog anymore.
+                this.setFindAnnotations(this.annotations); // Update the find annotations in the store.
+                this.storeFile(['findAnnotations.json', this.annotations]) // Write JSON file to system.
             },
-            showHelp: function() {
-                this.setShowTutorial(true);
+            showHelp: function() { // Show tutorial function.
+                this.setShowTutorial(true); // Set it in the store.
             }
         }
     };

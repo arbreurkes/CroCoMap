@@ -72,33 +72,32 @@
         name: 'Tutorial',
         components: {},
         props: {
-            tutorialComplete: Boolean,
-            showTutorial: Boolean
+            tutorialComplete: Boolean, // Tutorial completed?
+            showTutorial: Boolean // Show the tutorial dialog?
         },
         data: function () {
             return {
-                activeTab: 0
+                activeTab: 0 // Which tab is active? Initialize to first.
             }
         },
         computed: {
-            canClose: function() {
-                return this.tutorialComplete || this.activeTab === 4;
+            canClose: function() { // Can the tutorial be closed?
+                return this.tutorialComplete || this.activeTab === 4; // Only if on last page or previously completed.
             }
         },
         watch: {},
-        mounted: function () {
-        },
+        mounted: function () {},
         methods: {
             ...mapMutations(['setShowTutorial', 'setTutorialComplete']),
-            nextButtonCall: function () {
-                if (this.activeTab < 4) {
-                    this.activeTab++;
+            nextButtonCall: function () { // Next button click function.
+                if (this.activeTab < 4) { // Not on last tab?
+                    this.activeTab++; // Increment active tab index.
                 }
             },
             closeTutorial: function() {
-                this.activeTab = 0;
-                this.setShowTutorial(false);
-                this.setTutorialComplete(true);
+                this.activeTab = 0; // Set active tab to first.
+                this.setShowTutorial(false); // Stop showing tutorial (store)
+                this.setTutorialComplete(true); // Complete tutorial (store)
             }
         }
     };

@@ -13,16 +13,16 @@ import Find from "./components/pages/Find";
 import Fix from "./components/pages/Fix";
 import Verify from "./components/pages/Verify";
 
-window.$ = $;
-Vue.use(VueRouter);
-Vue.use(VueMaterial);
-Vue.config.productionTip = false;
-Vue.use(VueGoogleMaps, {
+window.$ = $; // Import jQuery to $.
+Vue.use(VueRouter); // Use VueRouter to navigate.
+Vue.use(VueMaterial); // Use VueMaterial as design framework.
+Vue.config.productionTip = false; // Determine whether you want to be bothered by "tips."
+Vue.use(VueGoogleMaps, { // Use VueGoogleMaps for Maps and Streetview
   load: {
-    key: process.env.VUE_APP_API_KEY,
+    key: process.env.VUE_APP_API_KEY, // Import API key
   }});
 
-window.hashCode = function(e) {
+window.hashCode = function(e) { // Function to hash strings.
     var hash = 0;
     for (var i = 0; i < e.length; i++) {
       var character = e.charCodeAt(i);
@@ -38,7 +38,7 @@ export default {
   components: {}
 }
 
-const routes = [
+const routes = [ // Determine the possible routes in this application.
   {
     path: '/',
     redirect: '/find/tabOne'
@@ -63,11 +63,11 @@ const routes = [
   }
 ];
 
-const router = new VueRouter({
+const router = new VueRouter({ // Initialize the router.
   routes
 });
 
-new Vue({
+new Vue({ // Initialize Vue itself.
   name: 'Home',
   el: '#app',
   router,

@@ -103,114 +103,114 @@
         components: {},
         data: function () {
             return {
-                pano: null,
-                marker: null,
-                fixIndex: 0,
-                changeCount: 0,
-                ratingSnapshot: false,
-                takingSnapshot: false,
-                showSubmit: false,
-                submitted: false,
-                indices: ['Second', 'Third', 'Fourth', 'Fifth', 'Sixth']
+                pano: null, // Street view panorama object.
+                marker: null, // Current marker.
+                fixIndex: 0, // Index of annotations working on.
+                changeCount: 0, // Count how many snapshots retaken.
+                ratingSnapshot: false, // Worker currently rating snapshot?
+                takingSnapshot: false, // Worker currently taking snapshot?
+                showSubmit: false, // Show submit prompt?
+                submitted: false, // Worker has submitted task?
+                indices: ['Second', 'Third', 'Fourth', 'Fifth', 'Sixth'] // Possible indices for result file (map-like objects).
             }
         },
         computed: {
-            google: gmapApi,
-            snapshots: function () {
+            google: gmapApi, // Google maps API object
+            snapshots: function () { // Annotations to fix.
                 return this.getFixSnapshots();
             },
-            snapshotsLoaded: function () {
+            snapshotsLoaded: function () { // Whether snapshots are fully loaded.
                 return this.snapshots[0].position.lat !== 0 && this.snapshots[0].position.lng !== 0;
             },
-            done: function() {
+            done: function() { // Whether worker has completed the task.
                 return this.fixIndex >= this.snapshots.length;
             },
-            submitText: function() {
+            submitText: function() { // Indicate whether worker still has to submit.
                 return this.submitted ? "" : " Submit via the menu button at the top of the screen. ";
             }
         },
         watch: {
-            google: function () {
+            google: function () { // On Google == loaded, initialize panorama.
+                if (this.google !== null && this.snapshotsLoaded) this.initPano();
+            }, // One of these two methods fires first, no double calls.
+            snapshotsLoaded: function () { // On snapshots == loaded, initialize panorama.
                 if (this.google !== null && this.snapshotsLoaded) this.initPano();
             },
-            snapshotsLoaded: function () {
-                if (this.google !== null && this.snapshotsLoaded) this.initPano();
-            },
-            fixIndex: function() {
-                if (this.done) {
+            fixIndex: function() { // On fixIndex change:
+                if (this.done) { // When done, worker cannot be rating an annotation.
                     this.ratingSnapshot = false;
-                } else if (this.fixIndex > 0) {
+                } else if (this.fixIndex > 0) { // When not yet done, load the next marker.
                     this.initMarker();
                 }
             }
         },
-        mounted: function () {
+        mounted: function () { // In first loading page.
             this.loadFixSnapshots();
         },
         methods: {
             ...mapActions(['loadFixSnapshots', 'storeFile']),
             ...mapGetters(['getFixSnapshots']),
             ...mapMutations(['setFixSnapshots', 'setShowTutorial']),
-            initPano: function () {
-                this.pano = this.$refs.pano.$panoObject;
+            initPano: function () { // Initialize the panorama.
+                this.pano = this.$refs.pano.$panoObject; // Get the panorama from the Vue object.
 
-                this.initMarker();
+                this.initMarker(); // Call method to initialize the first marker.
             },
-            initMarker: function () {
-                if (this.marker) {
+            initMarker: function () { // Method to initialize a marker
+                if (this.marker) { // Unload the previous marker, if any.
                     this.marker.setMap(null);
                 }
 
-                var that = this;
-                var snapshot = that.snapshots[that.fixIndex];
-                that.marker = new that.google.maps.Marker({
-                    index: that.fixIndex,
-                    position: snapshot.location,
-                    map: that.pano,
-                    title: 'Annotation'
+                var that = this; // For nested calls.
+                var snapshot = that.snapshots[that.fixIndex]; // Get snapshot corresponding to fix index.
+                that.marker = new that.google.maps.Marker({ // Create a marker using Google API.
+                    index: that.fixIndex, // Set custom value: index.
+                    position: snapshot.location, // Location of marker.
+                    map: that.pano, // Map is belongs to, panorama in this case.
+                    title: 'Annotation' // Shows on hover.
                 });
 
-                that.marker.addListener('click', function () {
-                    that.showMarkerContent();
+                that.marker.addListener('click', function () { // Add an on-click event listener.
+                    that.showMarkerContent(); // Show the corresponding content.
                 });
             },
-            showMarkerContent: function () {
-                this.ratingSnapshot = true;
+            showMarkerContent: function () { // Show the corresponding content.
+                this.ratingSnapshot = true; // Triggers the visibility of the rating dialog.
             },
-            acceptSnapshot: function() {
+            acceptSnapshot: function() { // Accept the snapshot as is. Actually merely finalizes rating process.
                 this.ratingSnapshot = false;
                 this.takingSnapshot = false;
                 this.fixIndex++;
             },
-            retakeSnapshot: function() {
+            retakeSnapshot: function() { // Start snapshot taking process.
                 this.ratingSnapshot = false;
                 this.takingSnapshot = true;
             },
-            takeSnapshot: function() {
-                this.panoPosition = this.pano.getPosition();
-                this.zoom = this.pano.getZoom();
-                this.pov = this.pano.getPov();
-                this.fov = (180 / Math.pow(2, this.zoom));
+            takeSnapshot: function() { // Retake snapshot.
+                this.panoPosition = this.pano.getPosition(); // Get position from where snapshot is taken.
+                this.zoom = this.pano.getZoom(); // Get zoom level from panorama.
+                this.pov = this.pano.getPov(); // Get POV from panorama.
+                this.fov = (180 / Math.pow(2, this.zoom)); // Calculate Field of view.
 
-                var url = "https://maps.googleapis.com/maps/api/streetview?size=320x320" +
-                    "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() +
-                    "&fov=" + this.fov +
+                var url = "https://maps.googleapis.com/maps/api/streetview?size=320x320" + // Load image from Static Street View API
+                    "&location=" + this.panoPosition.lat() + "," + this.panoPosition.lng() + // Snapshot cannot be taken from regular panorama
+                    "&fov=" + this.fov + // for security reasons.
                     "&heading=" + this.pov.heading + "" +
                     "&pitch=" + this.pov.pitch +
                     "&key=" + process.env.VUE_APP_API_KEY;
 
-                var that = this;
-                var image = new Image();
-                image.onload = function () {
-                    var canvas = that.$refs.canvas;
+                var that = this; // For nested calls.
+                var image = new Image(); // Create new HTML image.
+                image.onload = function () { // Set on-load listener.
+                    var canvas = that.$refs.canvas; // Get the canvas to draw the image on.
 
                     canvas.width = 320;
                     canvas.height = 320;
                     var ctx = canvas.getContext("2d");
                     ctx.drawImage(image, 0, 0);
-                    var imageUrl = canvas.toDataURL("image/png");
+                    var imageUrl = canvas.toDataURL("image/png"); // Convert canvas content to b64.
 
-                    for (var i = 0; i < that.indices.length; i++) {
+                    for (var i = 0; i < that.indices.length; i++) { // Determine which index this image can fill in the annotation object.
                         var index = that.indices[i];
                         if (that.snapshots[that.fixIndex][index] === "") {
                             that.snapshots[that.fixIndex][index] = imageUrl;
@@ -218,24 +218,24 @@
                         }
                     }
 
-                    that.changeCount++;
-                    that.acceptSnapshot();
+                    that.changeCount++; // Indicate a change has been made.
+                    that.acceptSnapshot(); // Finalize rating process.
                 };
 
-                image.setAttribute('crossOrigin', 'anonymous'); //
-                image.src = url;
+                image.setAttribute('crossOrigin', 'anonymous'); // Make sure image can be gotten crossOrigin.
+                image.src = url; // Set source of image.
             },
-            cancelSnapshot: function() {
+            cancelSnapshot: function() { // Cancel taking the snapshot.
                 this.ratingSnapshot = true;
                 this.takingSnapshot = false;
             },
-            submit: function() {
+            submit: function() { // Submit the task.
                 this.submitted = true;
                 this.showSubmit = false;
-                this.setFixSnapshots(this.snapshots);
-                this.storeFile(['fixedSnapshots.json', this.snapshots]);
+                this.setFixSnapshots(this.snapshots); // Write to state.
+                this.storeFile(['fixedSnapshots.json', this.snapshots]); // Write to file.
             },
-            showHelp: function() {
+            showHelp: function() { // Show the tutorial.
                 this.setShowTutorial(true);
             }
         }
