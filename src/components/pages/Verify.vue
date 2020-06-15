@@ -83,71 +83,71 @@
         },
         data: function () {
             return {
-                voteIndex: 0,
-                done: false,
-                uncertainPrompt: false,
-                omitPrompt: false,
+                voteIndex: 0, // Index of annotation working on.
+                done: false, // Completed task?
+                uncertainPrompt: false, // Show prompt to confirm whether worker is uncertain.
+                omitPrompt: false, // Show prompt to confirm whether worker finds object non-risky.
             }
         },
         computed: {
-            snapshots: function () {
+            snapshots: function () { // Get the annotations to verify.
                 return this.getVerifySnapshots();
             },
-            votes: function () {
+            votes: function () { // Get the votes the worker has already casted (also gets on updatign votes).
                 return this.getVerifyVotes();
             }
         },
         watch: {
-            snapshots: function () {
+            snapshots: function () { // Set done = true when there are no annotations to verify.
                 this.done = this.snapshots.length === 0;
             },
-            votes: {
-                immediate: true,
-                handler: function () {
-                    if (this.snapshots.length === 0) {
+            votes: { // On change of casted votes:
+                immediate: true, // Do immediately (also on first instance of votes).
+                handler: function () { // Handler method.
+                    if (this.snapshots.length === 0) { // If no snapshots, set done to true.
                         this.done = true;
-                    } else if (this.snapshots.length > this.votes.length) {
+                    } else if (this.snapshots.length > this.votes.length) { // Increase voteIndex if not yet done.
                         this.voteIndex++;
-                    } else {
+                    } else { // Automatically submit when done.
                         this.submit();
                     }
                 }
             }
         },
-        mounted: function () {
+        mounted: function () { // On first loading page.
             this.loadVerifySnapshots();
         },
         methods: {
             ...mapMutations(['setResults', 'setShowTutorial']),
             ...mapActions(['updateVerifyVotes', 'loadVerifySnapshots', 'storeFile']),
             ...mapGetters(['getVerifySnapshots', 'getVerifyVotes']),
-            uncertain: function () {
+            uncertain: function () { // Method for voting uncertain.
                 this.updateVerifyVotes("0");
                 this.uncertainPrompt = false;
             },
-            omit: function () {
+            omit: function () { // Method for voting non-risky.
                 this.updateVerifyVotes("-1");
                 this.omitPrompt = false;
             },
-            submit: function() {
+            submit: function() { // Method to submit the votes.
                 this.done = true;
 
-                var results = [];
+                var results = []; // Convert to results array to write.
                 for (var i = 0; i < this.snapshots.length; i++) {
                     var snapshot = this.snapshots[i];
                     var result = {
-                        position: snapshot.position,
-                        location: snapshot.location,
-                        pov: snapshot.pov,
-                        truth: this.votes[i]
+                        position: snapshot.position, // Position where snapshot is taken from
+                        location: snapshot.location, // Location of the marker
+                        pov: snapshot.pov, // POV of street view of snapshot.
+                        truth: this.votes[i] // non-risky -> -1; uncertain -> 0; vote -> b64 encoded image.
                     };
 
                     results.push(result);
                 }
 
-                this.storeFile(['results.json', results])
+                this.storeFile(['results.json', results]) // Write results to file.
             },
-            showHelp: function() {
+            showHelp: function() { // Show the tutorial again.
                 this.setShowTutorial(true);
             }
         }
